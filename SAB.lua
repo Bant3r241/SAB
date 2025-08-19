@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService, espObjects = game:GetService("Players"), game:GetService("RunService"), {}
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -87,47 +87,35 @@ if game.PlaceId == 109983668079237 then
                     continue
                 end
 
-                local attach = spawn:FindFirstChild("Attachment")
-                if not attach then
-                    warn("[Brainrot] Spawn '" .. spawn.Name .. "' missing 'Attachment'")
-                    continue
-                end
+                -- Find DisplayName and Generation TextLabels anywhere inside Base descendants
+                local displayName = "Unknown"
+                local generationText = nil
 
-                local animalOverhead = attach:FindFirstChild("AnimalOverhead")
-                if not animalOverhead then
-                    warn("[Brainrot] Attachment missing 'AnimalOverhead'")
-                    continue
-                end
-
-                local nameLabel
-                for _, child in pairs(animalOverhead:GetChildren()) do
-                    if child:IsA("TextLabel") and child.Name == "DisplayName" then
-                        nameLabel = child
-                        break
+                for _, obj in pairs(base:GetDescendants()) do
+                    if obj:IsA("TextLabel") then
+                        if obj.Name == "DisplayName" then
+                            displayName = obj.Text
+                        elseif obj.Name == "Generation" then
+                            generationText = obj.Text
+                        end
                     end
                 end
 
-                local gen = animalOverhead:FindFirstChild("Generation")
-                if not gen or not gen:IsA("TextLabel") then
-                    warn("[Brainrot] AnimalOverhead missing 'Generation' TextLabel")
-                    continue
-                end
-
-                local text = gen.Text
-                if text and text:find("/s") then
-                    local value = parseMoneyPerSec(text)
+                if generationText and generationText:find("/s") then
+                    local value = parseMoneyPerSec(generationText)
                     if value and value > best.value then
                         best.value = value
-                        best.raw = text
-                        best.name = nameLabel and nameLabel.Text or "Unknown"
+                        best.raw = generationText
+                        best.name = displayName
                         best.part = spawn -- Attach ESP to Spawn part
                         print("[Brainrot] New best found:", best.name, best.raw, "at", spawn:GetFullName())
                     end
                 else
-                    warn("[Brainrot] Generation text does not contain '/s':", tostring(text))
+                    warn("[Brainrot] Generation text does not contain '/s' or missing:", tostring(generationText))
                 end
             end
         end
+
         if best.value == 0 then
             warn("[Brainrot] No brainrot found with valid money per second!")
         end
