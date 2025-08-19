@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5wq", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing
     local function parseMoneyPerSec(text)
@@ -42,6 +42,12 @@ if game.PlaceId == 109983668079237 then
                 local base = podium:FindFirstChild("Base")
                 if not base then continue end
 
+                local decorations = base:FindFirstChild("Decorations")
+                if not decorations then continue end
+
+                local part = decorations:FindFirstChild("Part")
+                if not part then continue end  -- Skip if no part found
+
                 local spawn = base:FindFirstChild("Spawn")
                 if not spawn then continue end
 
@@ -58,7 +64,7 @@ if game.PlaceId == 109983668079237 then
                         best.value = value
                         best.raw = gen.Text
                         best.name = animalOverhead:FindFirstChild("DisplayName") and animalOverhead.DisplayName.Text or "Unknown"
-                        best.part = podium:FindFirstChild("Claim") and podium.Claim:FindFirstChild("Main")
+                        best.part = part  -- Attach to the correct part
                         foundBrainrotInPlot = true
                     end
                 end
@@ -71,20 +77,19 @@ if game.PlaceId == 109983668079237 then
         return best
     end
 
-    -- Toggle the visibility and highlight of the best brainrot
+    -- Toggle the visibility and highlight of the best brainrot (without red color)
     local function toggleBestBrainrotVisibility(state)
         local bestBrainrot = findBestBrainrot()
         if bestBrainrot.part then
             if state then
-                bestBrainrot.part.BrickColor = BrickColor.new("Bright red")
+                -- Create the label for the best brainrot at the correct part
                 createBrainrotLabel(bestBrainrot.part, bestBrainrot.name, bestBrainrot.raw)
                 print("[Best Brainrot]")
                 print("Name: " .. bestBrainrot.name)
                 print("Generation: " .. bestBrainrot.raw)
                 print("Value per second: " .. bestBrainrot.value)
             else
-                -- Optionally hide or reset the part color
-                bestBrainrot.part.BrickColor = BrickColor.new("Medium stone grey")  -- Reset color
+                -- Optionally hide or reset the part color (not changing color, just toggling visibility)
                 print("[Debug] Best Brainrot visibility toggled off.")
             end
         else
