@@ -1,12 +1,13 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot vrr", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
 
     -- Separate tables for player and brainrot ESPs
     local playerESPObjects, brainrotESPObjects = {}, {}
+    local lastBestBrainrot = nil  -- Store the previously found best brainrot
 
     -- Create the ESP
     local function createESP(part, text, color, espType)
@@ -77,7 +78,6 @@ if game.PlaceId == 109983668079237 then
         end
 
         local foundBrainrotInPlot = false  -- Flag to check if there's any brainrot in the plot
-        local noAttachmentLogsDone = false  -- Prevent multiple logs for missing attachments
 
         -- Iterate through all the plots
         for _, plot in pairs(plotsFolder:GetChildren()) do
@@ -123,7 +123,7 @@ if game.PlaceId == 109983668079237 then
     local function toggleBrainrotESP(state)
         brainrotESPEnabled = state
 
-        -- Clear old ESP for brainrot
+        -- Clear old ESP for brainrot if needed
         for part, gui in pairs(brainrotESPObjects) do
             if gui and gui.Adornee and gui.Name == "[ESP]" then
                 removeESP(part, "Brainrot")
@@ -132,11 +132,15 @@ if game.PlaceId == 109983668079237 then
 
         if not state then return end
 
-        -- Find the best brainrot and create the ESP
+        -- Find the best brainrot and create the ESP only if it's new or different
         local best = findBestBrainrot()
         if best.part then
-            createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0), "Brainrot")
-            print("[Debug] Created ESP for the best brainrot at " .. best.name .. " with value: " .. best.raw)
+            -- Check if it's a new best brainrot
+            if lastBestBrainrot ~= best.part then
+                createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0), "Brainrot")
+                print("[Debug] Created ESP for the best brainrot at " .. best.name .. " with value: " .. best.raw)
+                lastBestBrainrot = best.part  -- Update the last best brainrot
+            end
         else
             print("[Debug] No best brainrot part found to attach ESP!")
         end
