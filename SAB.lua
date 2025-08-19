@@ -1,12 +1,17 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v2", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
-    local Players, RunService, espObjects = game:GetService("Players"), game:GetService("RunService"), {}
+    local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
 
-    local function createESP(part, text, color)
+    -- Separate tables for player and brainrot ESPs
+    local playerESPObjects, brainrotESPObjects = {}, {}
+
+    local function createESP(part, text, color, espType)
         if not part then warn("[ESP] createESP called with nil part.") return end
+        local espObjects = espType == "Player" and playerESPObjects or brainrotESPObjects
+
         if espObjects[part] then return end
 
         local bb = Instance.new("BillboardGui")
@@ -15,7 +20,8 @@ if game.PlaceId == 109983668079237 then
         bb.Size = UDim2.new(0, 100, 0, 30)
         bb.StudsOffset = Vector3.new(0, 3, 0)
         bb.AlwaysOnTop = true
-        bb.Parent = game.CoreGui
+        bb.MaxDistance = 250
+        bb.Parent = game.Players.LocalPlayer.PlayerGui  -- Parent to PlayerGui for better rendering
 
         local lbl = Instance.new("TextLabel")
         lbl.Parent = bb
@@ -31,7 +37,8 @@ if game.PlaceId == 109983668079237 then
         print("[ESP] Created ESP for part:", part:GetFullName(), "with text:", text)
     end
 
-    local function removeESP(part)
+    local function removeESP(part, espType)
+        local espObjects = espType == "Player" and playerESPObjects or brainrotESPObjects
         if espObjects[part] then
             espObjects[part]:Destroy()
             espObjects[part] = nil
@@ -46,9 +53,9 @@ if game.PlaceId == 109983668079237 then
             local hrp = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
                 if state then
-                    createESP(hrp, p.Name, Color3.fromRGB(0, 162, 255))
+                    createESP(hrp, p.Name, Color3.fromRGB(0, 162, 255), "Player")
                 else
-                    removeESP(hrp)
+                    removeESP(hrp, "Player")
                 end
             end
         end
@@ -94,7 +101,7 @@ if game.PlaceId == 109983668079237 then
                         best.value = value
                         best.raw = gen.Text
                         best.name = nameLabel and nameLabel.Text or "Unknown"
-                        best.part = attachment -- ✅ Attach ESP to the Attachment
+                        best.part = attachment  -- Attach to the Attachment for Brainrot ESP
                         print("[Brainrot] New best found:", best.name, best.raw, "at", attachment:GetFullName())
                     end
                 else
@@ -110,9 +117,10 @@ if game.PlaceId == 109983668079237 then
         brainrotESPEnabled = state
         print("[ESP] Brainrot ESP toggled:", state)
 
-        for part, gui in pairs(espObjects) do
+        -- Clear old ESP for brainrot
+        for part, gui in pairs(brainrotESPObjects) do
             if gui and gui.Adornee and gui.Name == "[ESP]" then
-                removeESP(part)
+                removeESP(part, "Brainrot")
             end
         end
 
@@ -120,7 +128,7 @@ if game.PlaceId == 109983668079237 then
 
         local best = findBestBrainrot()
         if best.part then
-            createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0))
+            createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0), "Brainrot")
         else
             warn("[ESP] No best brainrot part found to attach ESP!")
         end
@@ -130,9 +138,16 @@ if game.PlaceId == 109983668079237 then
         if playerESPEnabled then togglePlayerESP(true) end
         if brainrotESPEnabled then toggleBrainrotESP(true) end
 
-        for part in pairs(espObjects) do
+        -- Clean up any ESP that no longer exists or isn't visible
+        for part in pairs(playerESPObjects) do
             if not part or not part.Parent then
-                removeESP(part)
+                removeESP(part, "Player")
+            end
+        end
+
+        for part in pairs(brainrotESPObjects) do
+            if not part or not part.Parent then
+                removeESP(part, "Brainrot")
             end
         end
     end)
@@ -141,7 +156,7 @@ if game.PlaceId == 109983668079237 then
         p.CharacterAdded:Connect(function(c)
             local hrp = c:WaitForChild("HumanoidRootPart", 5)
             if playerESPEnabled and hrp then
-                createESP(hrp, p.Name, Color3.fromRGB(0, 162, 255))
+                createESP(hrp, p.Name, Color3.fromRGB(0, 162, 255), "Player")
             end
         end)
     end)
