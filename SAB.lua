@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v22", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -72,45 +72,24 @@ if game.PlaceId == 109983668079237 then
             return best
         end
 
-        local foundError = false  -- Flag to ensure only one log
-
+        -- Iterate through all the plots
         for _, plot in pairs(plotsFolder:GetChildren()) do
             local podiums = plot:FindFirstChild("AnimalPodiums")
-            if not podiums then 
-                if not foundError then
-                    warn("[Brainrot] No 'AnimalPodiums' found in plot.")
-                    foundError = true
-                end
-                continue
-            end
+            if not podiums then continue end
 
+            -- Iterate through each podium
             for _, podium in pairs(podiums:GetChildren()) do
-                local claim = podium:FindFirstChild("Claim")
-                if not claim then 
-                    if not foundError then
-                        warn("[Brainrot] No 'Claim' part found in podium: " .. podium.Name)
-                        foundError = true
-                    end
-                    continue
-                end
+                local base = podium:FindFirstChild("Base")
+                if not base then continue end
 
-                local main = claim:FindFirstChild("Main")
-                if not main then
-                    if not foundError then
-                        warn("[Brainrot] No 'Main' part found in Claim for podium: " .. podium.Name)
-                        foundError = true
-                    end
-                    continue
-                end
+                local spawn = base:FindFirstChild("Spawn")
+                if not spawn then continue end
 
-                local animalOverhead = main:FindFirstChild("AnimalOverhead")
-                if not animalOverhead then 
-                    if not foundError then
-                        warn("[Brainrot] No 'AnimalOverhead' found in Main for podium: " .. podium.Name)
-                        foundError = true
-                    end
-                    continue
-                end
+                local attachment = spawn:FindFirstChild("Attachment")
+                if not attachment then continue end
+
+                local animalOverhead = attachment:FindFirstChild("AnimalOverhead")
+                if not animalOverhead then continue end
 
                 local gen = animalOverhead:FindFirstChild("Generation")
                 if gen and gen:IsA("TextLabel") then
@@ -119,7 +98,7 @@ if game.PlaceId == 109983668079237 then
                         best.value = value
                         best.raw = gen.Text
                         best.name = animalOverhead:FindFirstChild("DisplayName") and animalOverhead.DisplayName.Text or "Unknown"
-                        best.part = main
+                        best.part = podium:FindFirstChild("Claim") and podium.Claim:FindFirstChild("Main")  -- Attach to Main part under Claim
                     end
                 end
             end
