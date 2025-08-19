@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v111", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -68,60 +68,29 @@ if game.PlaceId == 109983668079237 then
         local best = {value = 0, raw = "", name = "", part = nil}
         local plotsFolder = workspace:FindFirstChild("Plots")
         if not plotsFolder then
-            warn("[Brainrot] No 'Plots' folder found in workspace!")
             return best
         end
 
-        local foundError = false  -- Flag to ensure only one log
+        local foundBrainrotInPlot = false  -- Flag to check if there's any brainrot in the plot
 
         -- Iterate through all the plots
         for _, plot in pairs(plotsFolder:GetChildren()) do
             local podiums = plot:FindFirstChild("AnimalPodiums")
-            if not podiums then 
-                if not foundError then
-                    warn("[Brainrot] No 'AnimalPodiums' found in plot: " .. plot.Name)
-                    foundError = true
-                end
-                continue
-            end
+            if not podiums then continue end
 
-            -- Iterate through each podium
+            -- Iterate through each podium in the plot
             for _, podium in pairs(podiums:GetChildren()) do
                 local base = podium:FindFirstChild("Base")
-                if not base then 
-                    if not foundError then
-                        warn("[Brainrot] No 'Base' part found in podium: " .. podium.Name)
-                        foundError = true
-                    end
-                    continue
-                end
+                if not base then continue end
 
                 local spawn = base:FindFirstChild("Spawn")
-                if not spawn then 
-                    if not foundError then
-                        warn("[Brainrot] No 'Spawn' part found in base: " .. base.Name)
-                        foundError = true
-                    end
-                    continue
-                end
+                if not spawn then continue end
 
                 local attachment = spawn:FindFirstChild("Attachment")
-                if not attachment then
-                    if not foundError then
-                        warn("[Brainrot] No 'Attachment' part found in spawn: " .. spawn.Name)
-                        foundError = true
-                    end
-                    continue
-                end
+                if not attachment then continue end  -- Skip this podium if no brainrot
 
                 local animalOverhead = attachment:FindFirstChild("AnimalOverhead")
-                if not animalOverhead then 
-                    if not foundError then
-                        warn("[Brainrot] No 'AnimalOverhead' found in attachment: " .. attachment.Name)
-                        foundError = true
-                    end
-                    continue
-                end
+                if not animalOverhead then continue end
 
                 local gen = animalOverhead:FindFirstChild("Generation")
                 if gen and gen:IsA("TextLabel") then
@@ -131,9 +100,15 @@ if game.PlaceId == 109983668079237 then
                         best.raw = gen.Text
                         best.name = animalOverhead:FindFirstChild("DisplayName") and animalOverhead.DisplayName.Text or "Unknown"
                         best.part = podium:FindFirstChild("Claim") and podium.Claim:FindFirstChild("Main")  -- Attach to Main part under Claim
+                        foundBrainrotInPlot = true  -- Found at least one brainrot in this plot
                     end
                 end
             end
+        end
+
+        -- If no brainrot is found in the plot, return the default best
+        if not foundBrainrotInPlot then
+            return best
         end
 
         return best
@@ -156,7 +131,7 @@ if game.PlaceId == 109983668079237 then
         if best.part then
             createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0), "Brainrot")
         else
-            warn("[ESP] No best brainrot part found to attach ESP!")
+            -- No brainrot found
         end
     end
 
