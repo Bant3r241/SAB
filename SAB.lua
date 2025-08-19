@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot vasfa", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing (using your proposed method)
     local function parseMoneyPerSec(text)
@@ -81,42 +81,33 @@ if game.PlaceId == 109983668079237 then
     end
 
     -- Show or hide the best brainrot and highlight it
-    local function toggleBestBrainrotVisibility(state)
-        if state then
-            local bestBrainrot = findBestBrainrot()
-            if bestBrainrot.part then
-                -- Highlight the best brainrot part by changing its color
-                bestBrainrot.part.BrickColor = BrickColor.new("Bright red")  -- Example: highlight with red
-                -- Create the label for the best brainrot
-                createBrainrotLabel(bestBrainrot.part, bestBrainrot.name, bestBrainrot.raw)
-                -- Print to Output
-                print("[Best Brainrot]")
-                print("Name: " .. bestBrainrot.name)
-                print("Generation: " .. bestBrainrot.raw)
-                print("Value per second: " .. bestBrainrot.value)
-            else
-                print("[Debug] No valid brainrot found.")
-            end
+    local function toggleBestBrainrotVisibility()
+        local bestBrainrot = findBestBrainrot()
+        if bestBrainrot.part then
+            -- Highlight the best brainrot part by changing its color
+            bestBrainrot.part.BrickColor = BrickColor.new("Bright red")  -- Example: highlight with red
+            -- Create the label for the best brainrot
+            createBrainrotLabel(bestBrainrot.part, bestBrainrot.name, bestBrainrot.raw)
+            -- Print to Output
+            print("[Best Brainrot]")
+            print("Name: " .. bestBrainrot.name)
+            print("Generation: " .. bestBrainrot.raw)
+            print("Value per second: " .. bestBrainrot.value)
         else
-            -- Remove the label and reset the highlight
-            if lastBestBrainrot then
-                lastBestBrainrot.BrickColor = BrickColor.new("Medium stone grey")  -- Reset to original color (or other neutral color)
-                lastBestBrainrot = nil  -- Clear the saved part
-            end
-            -- Remove any existing labels from the BillboardGui
-            for _, billboard in pairs(workspace:FindPartsInRegion3(workspace.CurrentCamera.CFrame:pointToWorldSpace(Vector3.new(0, 0, 0)), Vector3.new(500, 500, 500), nil)) do
-                if billboard:IsA("BillboardGui") then
-                    billboard:Destroy()
-                end
-            end
+            print("[Debug] No valid brainrot found.")
         end
     end
 
-    -- One-liner toggle for the Brainrot ESP functionality
+    -- Create the UI button for showing the best brainrot
     local MiscTab = Window:MakeTab({Name="Misc", Icon="rbxassetid://4299432428", PremiumOnly=false})
 
-    -- The one-liner toggle for controlling the visibility of the best brainrot
-    MiscTab:AddToggle({Name = "Brainrot ESP", Default = false, Callback = function(v) toggleBestBrainrotVisibility(v) end})
+    -- Add the button for showing the best brainrot
+    MiscTab:AddButton({
+        Name = "Show Best Brainrot",  -- The label of the button
+        Callback = function()
+            toggleBestBrainrotVisibility()  -- Show the best brainrot when button is clicked
+        end
+    })
 
     OrionLib:Init()
 end
