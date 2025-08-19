@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name = "ABI │ Steal A Brainrot", IntroEnabled = false})
+    local Window = OrionLib:MakeWindow({Name = "ABI │ Steal A Brainrot1", IntroEnabled = false})
 
     -- Tabs
     local MainTab = Window:MakeTab({Name = "Main", Icon = "rbxassetid://4299432428", PremiumOnly = false})
@@ -34,24 +34,18 @@ if game.PlaceId == 109983668079237 then
                 local part = decorations:FindFirstChild("Part")
                 if not part then continue end  -- Skip if no part found
 
-                local spawn = base:FindFirstChild("Spawn")
-                if not spawn then continue end
-
-                local attachment = spawn:FindFirstChild("Attachment")
-                if not attachment then continue end
-
-                local animalOverhead = attachment:FindFirstChild("AnimalOverhead")
-                if not animalOverhead then continue end
-
-                local gen = animalOverhead:FindFirstChild("Generation")
-                if gen and gen:IsA("TextLabel") then
-                    local value = parseMoneyPerSec(gen.Text)
-                    if value and value > best.value then
-                        best.value = value
-                        best.raw = gen.Text
-                        best.name = animalOverhead:FindFirstChild("DisplayName") and animalOverhead.DisplayName.Text or "Unknown"
-                        best.part = part  -- Attach to the correct part
-                        foundBrainrotInPlot = true
+                local animalOverhead = base:FindFirstChild("AnimalOverhead")
+                if animalOverhead then
+                    local gen = animalOverhead:FindFirstChild("Generation")
+                    if gen and gen:IsA("TextLabel") then
+                        local value = parseMoneyPerSec(gen.Text)
+                        if value and value > best.value then
+                            best.value = value
+                            best.raw = gen.Text
+                            best.name = animalOverhead:FindFirstChild("DisplayName") and animalOverhead.DisplayName.Text or "Unknown"
+                            best.part = part  -- Attach to the correct part
+                            foundBrainrotInPlot = true
+                        end
                     end
                 end
             end
@@ -63,14 +57,14 @@ if game.PlaceId == 109983668079237 then
         return best
     end
 
-    -- Function to create the ESP for the brainrot
+    -- Function to create the ESP for the brainrot part
     local function createESPForBrainrot(part, name)
         -- Create a BillboardGui to display the brainrot's name above the part
         local espGui = Instance.new("BillboardGui")
         espGui.Adornee = part
         espGui.Size = UDim2.new(0, 200, 0, 50)  -- Size of the label
         espGui.StudsOffset = Vector3.new(0, 3, 0)  -- Position above the part
-        espGui.Parent = part
+        espGui.Parent = part  -- Attach the BillboardGui to the part
 
         -- Create a TextLabel to show the brainrot's name
         local espLabel = Instance.new("TextLabel")
@@ -112,6 +106,29 @@ if game.PlaceId == 109983668079237 then
             end
         end
     })
+
+    -- Additional ESP logic for showing part visibility on screen
+    local function updateESP(partToTrack, espGui)
+        local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(partToTrack.Position)
+        if onScreen then
+            espGui.Adornee = partToTrack
+            espGui.Enabled = true
+            espGui.AlwaysOnTop = true
+        else
+            espGui.Enabled = false
+        end
+    end
+
+    -- Connect the update function to the camera's viewport size change
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+        local bestBrainrot = findBestBrainrot()
+        if bestBrainrot.part and bestBrainrotESPEnabled then
+            local espGui = bestBrainrot.part:FindFirstChild("ESP")
+            if espGui then
+                updateESP(bestBrainrot.part, espGui)
+            end
+        end
+    end)
 
     OrionLib:Init()
 end
