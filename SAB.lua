@@ -1,20 +1,20 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name = "ABI │ Steal A Brainrot1", IntroEnabled = false})
+    local Window = OrionLib:MakeWindow({Name = "ABI │ Steal A Brainrot", IntroEnabled = false})
 
     -- Tabs
     local MainTab = Window:MakeTab({Name = "Main", Icon = "rbxassetid://4299432428", PremiumOnly = false})
     local EspTab = Window:MakeTab({Name = "ESP", Icon = "rbxassetid://4299432428", PremiumOnly = false})
     local MiscTab = Window:MakeTab({Name = "Misc", Icon = "rbxassetid://4299432428", PremiumOnly = false})
 
-    -- Function to parse money per second from the TextLabel
+    -- Money per second parsing function
     local function parseMoneyPerSec(text)
         local num, suffix = text:match("%$([%d%.]+)([KMBT]?)/s")
         local multipliers = {K = 1e3, M = 1e6, B = 1e9, T = 1e12}
         return num and tonumber(num) * (multipliers[suffix] or 1) or nil
     end
 
-    -- Function to find the best brainrot in the game
+    -- Find the best brainrot in the game
     local function findBestBrainrot()
         local best = {value = 0, raw = "", name = "", part = nil}
         local plotsFolder = workspace:FindFirstChild("Plots")
@@ -57,26 +57,27 @@ if game.PlaceId == 109983668079237 then
         return best
     end
 
-    -- Function to create the ESP for the brainrot part
-    local function createESPForBrainrot(part, name)
-        -- Create a BillboardGui to display the brainrot's name above the part
-        local espGui = Instance.new("BillboardGui")
-        espGui.Adornee = part
-        espGui.Size = UDim2.new(0, 200, 0, 50)  -- Size of the label
-        espGui.StudsOffset = Vector3.new(0, 3, 0)  -- Position above the part
-        espGui.Parent = part  -- Attach the BillboardGui to the part
+    -- PartESP integration (load PartESP library)
+    local PartESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/RtxyDev/PartESP/main/Main.lua"))()
 
-        -- Create a TextLabel to show the brainrot's name
-        local espLabel = Instance.new("TextLabel")
-        espLabel.Size = UDim2.new(1, 0, 1, 0)
-        espLabel.BackgroundTransparency = 1
-        espLabel.Text = name  -- Display the brainrot's name
-        espLabel.TextColor3 = Color3.fromRGB(255, 255, 0)  -- Neon yellow color
-        espLabel.TextSize = 18
-        espLabel.Font = Enum.Font.GothamBold
-        espLabel.TextStrokeTransparency = 0.8
-        espLabel.TextScaled = true
-        espLabel.Parent = espGui
+    -- Function to add PartESP to the best brainrot part
+    local function addPartESPForBrainrot(bestBrainrot)
+        if bestBrainrot.part then
+            PartESP.AddESP(
+                bestBrainrot.name,  -- Display Name of the brainrot part
+                bestBrainrot.part,   -- The actual part to track
+                30,                  -- Text Size
+                Color3.fromRGB(255, 255, 0)  -- Text Color (Neon Yellow)
+            )
+            
+            -- Add the generation info under the name
+            PartESP.AddESP(
+                "Generation: " .. bestBrainrot.raw,  -- Generation info
+                bestBrainrot.part,   -- The same part to track
+                20,                  -- Text Size (smaller for generation info)
+                Color3.fromRGB(255, 255, 255)  -- White color for generation info
+            )
+        end
     end
 
     -- Toggle for the best brainrot ESP in the ESP tab
@@ -90,15 +91,11 @@ if game.PlaceId == 109983668079237 then
             local bestBrainrot = findBestBrainrot()
             if bestBrainrot.part then
                 if state then
-                    createESPForBrainrot(bestBrainrot.part, bestBrainrot.name)
+                    addPartESPForBrainrot(bestBrainrot)
                     print("[Best Brainrot] ESP Enabled")
                 else
-                    -- Remove ESP (if needed)
-                    for _, child in pairs(bestBrainrot.part:GetChildren()) do
-                        if child:IsA("BillboardGui") then
-                            child:Destroy()
-                        end
-                    end
+                    -- Remove ESP (PartESP library will automatically handle removal)
+                    PartESP.RemoveESP(bestBrainrot.part)
                     print("[Best Brainrot] ESP Disabled")
                 end
             else
@@ -106,29 +103,6 @@ if game.PlaceId == 109983668079237 then
             end
         end
     })
-
-    -- Additional ESP logic for showing part visibility on screen
-    local function updateESP(partToTrack, espGui)
-        local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(partToTrack.Position)
-        if onScreen then
-            espGui.Adornee = partToTrack
-            espGui.Enabled = true
-            espGui.AlwaysOnTop = true
-        else
-            espGui.Enabled = false
-        end
-    end
-
-    -- Connect the update function to the camera's viewport size change
-    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-        local bestBrainrot = findBestBrainrot()
-        if bestBrainrot.part and bestBrainrotESPEnabled then
-            local espGui = bestBrainrot.part:FindFirstChild("ESP")
-            if espGui then
-                updateESP(bestBrainrot.part, espGui)
-            end
-        end
-    end)
 
     OrionLib:Init()
 end
