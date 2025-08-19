@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name = "ABI │ Steal A Brainrot1", IntroEnabled = false})
+    local Window = OrionLib:MakeWindow({Name = "ABI │ Steal A Brainrot", IntroEnabled = false})
 
     -- Tabs
     local MainTab = Window:MakeTab({Name = "Main", Icon = "rbxassetid://4299432428", PremiumOnly = false})
@@ -14,7 +14,7 @@ if game.PlaceId == 109983668079237 then
         return num and tonumber(num) * (multipliers[suffix] or 1) or nil
     end
 
-    -- Find the best brainrot in the game
+    -- Function to find the best brainrot in the game
     local function findBestBrainrot()
         local best = {value = 0, raw = "", name = "", part = nil}
         local plotsFolder = workspace:FindFirstChild("Plots")
@@ -57,49 +57,18 @@ if game.PlaceId == 109983668079237 then
         return best
     end
 
-    -- PartESP integration (load PartESP library)
-    local PartESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/RtxyDev/PartESP/main/Main.lua"))()
-
-    -- Function to add PartESP to the best brainrot part
-    local function addPartESPForBrainrot(bestBrainrot)
-        if bestBrainrot.part then
-            PartESP.AddESP(
-                bestBrainrot.name,  -- Use the best brainrot's name as the part name
-                bestBrainrot.part,   -- The actual part to track
-                30,                  -- Text Size
-                Color3.fromRGB(255, 255, 0)  -- Text Color (Neon Yellow)
-            )
-            
-            -- Add the generation info under the name
-            PartESP.AddESP(
-                "Generation: " .. bestBrainrot.raw,  -- Generation info
-                bestBrainrot.part,   -- The same part to track
-                20,                  -- Text Size (smaller for generation info)
-                Color3.fromRGB(255, 255, 255)  -- White color for generation info
-            )
-        end
-    end
-
-    -- Toggle for the best brainrot ESP in the ESP tab
-    local bestBrainrotESPEnabled = false
-
-    EspTab:AddToggle({
-        Name = "Show Best Brainrot ESP",
-        Default = false,  -- Default state (off)
-        Callback = function(state)
-            bestBrainrotESPEnabled = state
+    -- Add a button that finds the best brainrot and prints its details in the console
+    MiscTab:AddButton({
+        Name = "Find Best Brainrot",
+        Callback = function()
             local bestBrainrot = findBestBrainrot()
             if bestBrainrot.part then
-                if state then
-                    addPartESPForBrainrot(bestBrainrot)
-                    print("[Best Brainrot] ESP Enabled")
-                else
-                    -- Remove ESP (PartESP library will automatically handle removal)
-                    PartESP.RemoveESP(bestBrainrot.part)
-                    print("[Best Brainrot] ESP Disabled")
-                end
+                -- Print the details of the best brainrot to the console
+                print("[Best Brainrot] Name: " .. bestBrainrot.name)
+                print("[Best Brainrot] Generation: " .. bestBrainrot.raw)
+                print("[Best Brainrot] Value per second: " .. bestBrainrot.value)
             else
-                print("[Debug] No valid brainrot found for ESP.")
+                print("[Debug] No valid brainrot found.")
             end
         end
     })
