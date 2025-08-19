@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v2", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -81,13 +81,22 @@ if game.PlaceId == 109983668079237 then
                 if not base then continue end
 
                 local claim = base:FindFirstChild("Claim")
-                if not claim then continue end
+                if not claim then
+                    print("[Debug] No 'Claim' part found in Base for podium:", podium.Name)
+                    continue
+                end
 
                 local main = claim:FindFirstChild("Main")
-                if not main then continue end  -- Attach ESP to the Main part if it exists
+                if not main then
+                    print("[Debug] No 'Main' part found in Claim for podium:", podium.Name)
+                    continue
+                end  -- Attach ESP to the Main part if it exists
 
                 local animalOverhead = main:FindFirstChild("AnimalOverhead")
-                if not animalOverhead then continue end
+                if not animalOverhead then
+                    print("[Debug] No 'AnimalOverhead' found in Main for podium:", podium.Name)
+                    continue
+                end
 
                 local nameLabel = animalOverhead:FindFirstChild("DisplayName")
                 local gen = animalOverhead:FindFirstChild("Generation")
@@ -99,6 +108,7 @@ if game.PlaceId == 109983668079237 then
                         best.raw = gen.Text
                         best.name = nameLabel and nameLabel.Text or "Unknown"
                         best.part = main  -- Attach to Main part
+                        print("[Debug] New best brainrot found: " .. best.name .. " with value: " .. best.raw)
                     end
                 else
                     warn("[Brainrot] Generation text does not contain '/s' or missing:", gen and gen.Text or "nil")
