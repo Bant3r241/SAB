@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v111", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -72,24 +72,56 @@ if game.PlaceId == 109983668079237 then
             return best
         end
 
+        local foundError = false  -- Flag to ensure only one log
+
         -- Iterate through all the plots
         for _, plot in pairs(plotsFolder:GetChildren()) do
             local podiums = plot:FindFirstChild("AnimalPodiums")
-            if not podiums then continue end
+            if not podiums then 
+                if not foundError then
+                    warn("[Brainrot] No 'AnimalPodiums' found in plot: " .. plot.Name)
+                    foundError = true
+                end
+                continue
+            end
 
             -- Iterate through each podium
             for _, podium in pairs(podiums:GetChildren()) do
                 local base = podium:FindFirstChild("Base")
-                if not base then continue end
+                if not base then 
+                    if not foundError then
+                        warn("[Brainrot] No 'Base' part found in podium: " .. podium.Name)
+                        foundError = true
+                    end
+                    continue
+                end
 
                 local spawn = base:FindFirstChild("Spawn")
-                if not spawn then continue end
+                if not spawn then 
+                    if not foundError then
+                        warn("[Brainrot] No 'Spawn' part found in base: " .. base.Name)
+                        foundError = true
+                    end
+                    continue
+                end
 
                 local attachment = spawn:FindFirstChild("Attachment")
-                if not attachment then continue end
+                if not attachment then
+                    if not foundError then
+                        warn("[Brainrot] No 'Attachment' part found in spawn: " .. spawn.Name)
+                        foundError = true
+                    end
+                    continue
+                end
 
                 local animalOverhead = attachment:FindFirstChild("AnimalOverhead")
-                if not animalOverhead then continue end
+                if not animalOverhead then 
+                    if not foundError then
+                        warn("[Brainrot] No 'AnimalOverhead' found in attachment: " .. attachment.Name)
+                        foundError = true
+                    end
+                    continue
+                end
 
                 local gen = animalOverhead:FindFirstChild("Generation")
                 if gen and gen:IsA("TextLabel") then
