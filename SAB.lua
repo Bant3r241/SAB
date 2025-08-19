@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v2", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService, espObjects = game:GetService("Players"), game:GetService("RunService"), {}
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -94,9 +94,11 @@ if game.PlaceId == 109983668079237 then
                         best.value = value
                         best.raw = gen.Text
                         best.name = nameLabel and nameLabel.Text or "Unknown"
-                        best.part = spawn
-                        print("[Brainrot] New best found:", best.name, best.raw, "at", spawn:GetFullName())
+                        best.part = attachment -- ✅ Attach ESP to the Attachment
+                        print("[Brainrot] New best found:", best.name, best.raw, "at", attachment:GetFullName())
                     end
+                else
+                    warn("[Brainrot] Generation text does not contain '/s' or missing:", gen and gen.Text or "nil")
                 end
             end
         end
@@ -109,7 +111,7 @@ if game.PlaceId == 109983668079237 then
         print("[ESP] Brainrot ESP toggled:", state)
 
         for part, gui in pairs(espObjects) do
-            if gui and gui.Adornee and gui.Adornee.Name == "Spawn" then
+            if gui and gui.Adornee and gui.Name == "[ESP]" then
                 removeESP(part)
             end
         end
