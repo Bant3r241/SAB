@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v2", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -9,18 +9,18 @@ if game.PlaceId == 109983668079237 then
     local playerESPObjects, brainrotESPObjects = {}, {}
 
     local function createESP(part, text, color, espType)
-        if not part then warn("[ESP] createESP called with nil part.") return end
+        if not part then return end
         local espObjects = espType == "Player" and playerESPObjects or brainrotESPObjects
 
         if espObjects[part] then return end
 
         local bb = Instance.new("BillboardGui")
         bb.Name = "[ESP]"
-        bb.Adornee = part  -- Attach to the Spawn part (not Attachment)
+        bb.Adornee = part  -- Attach to the Main part
         bb.Size = UDim2.new(0, 100, 0, 30)
         bb.StudsOffset = Vector3.new(0, 3, 0)
         bb.AlwaysOnTop = true
-        bb.MaxDistance = 500  -- Increase MaxDistance for visibility
+        bb.MaxDistance = 250
         bb.Parent = game.Players.LocalPlayer.PlayerGui  -- Parent to PlayerGui for better rendering
 
         local lbl = Instance.new("TextLabel")
@@ -34,7 +34,6 @@ if game.PlaceId == 109983668079237 then
         lbl.TextScaled = true
 
         espObjects[part] = bb
-        print("[ESP] Created ESP for part:", part:GetFullName(), "with text:", text)
     end
 
     local function removeESP(part, espType)
@@ -42,13 +41,11 @@ if game.PlaceId == 109983668079237 then
         if espObjects[part] then
             espObjects[part]:Destroy()
             espObjects[part] = nil
-            print("[ESP] Removed ESP for part:", part:GetFullName())
         end
     end
 
     local function togglePlayerESP(state)
         playerESPEnabled = state
-        print("[ESP] Player ESP toggled:", state)
         for _, p in pairs(Players:GetPlayers()) do
             local hrp = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
@@ -83,13 +80,13 @@ if game.PlaceId == 109983668079237 then
                 local base = podium:FindFirstChild("Base")
                 if not base then continue end
 
-                local spawn = base:FindFirstChild("Spawn")
-                if not spawn then continue end
+                local claim = base:FindFirstChild("Claim")
+                if not claim then continue end
 
-                local attachment = spawn:FindFirstChild("Attachment")
-                if not attachment then continue end
+                local main = claim:FindFirstChild("Main")
+                if not main then continue end  -- Attach ESP to the Main part if it exists
 
-                local animalOverhead = attachment:FindFirstChild("AnimalOverhead")
+                local animalOverhead = main:FindFirstChild("AnimalOverhead")
                 if not animalOverhead then continue end
 
                 local nameLabel = animalOverhead:FindFirstChild("DisplayName")
@@ -101,8 +98,7 @@ if game.PlaceId == 109983668079237 then
                         best.value = value
                         best.raw = gen.Text
                         best.name = nameLabel and nameLabel.Text or "Unknown"
-                        best.part = spawn  -- Attach to the Spawn part for Brainrot ESP (instead of attachment)
-                        print("[Brainrot] New best found:", best.name, best.raw, "at", spawn:GetFullName())
+                        best.part = main  -- Attach to Main part
                     end
                 else
                     warn("[Brainrot] Generation text does not contain '/s' or missing:", gen and gen.Text or "nil")
@@ -115,7 +111,6 @@ if game.PlaceId == 109983668079237 then
 
     local function toggleBrainrotESP(state)
         brainrotESPEnabled = state
-        print("[ESP] Brainrot ESP toggled:", state)
 
         -- Clear old ESP for brainrot
         for part, gui in pairs(brainrotESPObjects) do
