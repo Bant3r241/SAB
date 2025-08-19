@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot vr5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing
     local function parseMoneyPerSec(text)
@@ -29,35 +29,30 @@ if game.PlaceId == 109983668079237 then
     end
 
     -- Make the part neon and visible through walls (ESP-like effect)
-    local function makePartVisibleThroughWalls(part)
+    local function makePartVisibleThroughWalls(part, name)
         -- Set the part's material to Neon for a glowing effect
         part.Material = Enum.Material.Neon
         part.Color = Color3.fromRGB(0, 255, 255)  -- Neon cyan (adjust as needed)
         part.CanCollide = false  -- Make it passable through walls
         part.Transparency = 0.1  -- Low transparency for better visibility
 
-        -- Create an ESP-like effect (BillboardGui with a frame for the object)
-        local esp = Instance.new("BillboardGui")
-        esp.Adornee = part
-        esp.Parent = part
-        esp.Size = UDim2.new(0, 100, 0, 100)  -- Size of the ESP box
-        esp.StudsOffset = Vector3.new(0, 3, 0)  -- Adjust offset as needed
+        -- Create a BillboardGui to display the brainrot's name above the part
+        local billboard = Instance.new("BillboardGui")
+        billboard.Adornee = part
+        billboard.Parent = part
+        billboard.Size = UDim2.new(0, 200, 0, 50)  -- Size of the label
+        billboard.StudsOffset = Vector3.new(0, 3, 0)  -- Position above the part
 
-        local espFrame = Instance.new("Frame")
-        espFrame.Size = UDim2.new(1, 0, 1, 0)
-        espFrame.BackgroundColor3 = Color3.fromRGB(0, 255, 255)  -- Neon color
-        espFrame.BackgroundTransparency = 0.5  -- Slight transparency for the ESP
-        espFrame.BorderSizePixel = 0  -- No border
-        espFrame.Parent = esp
-
-        -- Optional: Set an outline effect around the ESP frame
-        local outline = Instance.new("Frame")
-        outline.Size = UDim2.new(1, 4, 1, 4)  -- Outline size
-        outline.Position = UDim2.new(0, -2, 0, -2)  -- Offset for outline
-        outline.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red outline color
-        outline.BackgroundTransparency = 0.2  -- Slight transparency for outline
-        outline.BorderSizePixel = 0  -- No border
-        outline.Parent = esp
+        -- Create a TextLabel to show the brainrot's name
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Parent = billboard
+        textLabel.BackgroundTransparency = 1  -- No background
+        textLabel.Text = name  -- Display the brainrot's name
+        textLabel.TextColor3 = Color3.fromRGB(255, 255, 0)  -- Neon yellow color
+        textLabel.TextSize = 18
+        textLabel.Font = Enum.Font.GothamBold
+        textLabel.TextStrokeTransparency = 0.8  -- Slight stroke to make the text clearer
+        textLabel.TextScaled = true  -- Make text scale with the label size
     end
 
     -- Reset the part back to normal (remove glow and ESP-like effect)
@@ -130,8 +125,8 @@ if game.PlaceId == 109983668079237 then
         local bestBrainrot = findBestBrainrot()
         if bestBrainrot.part then
             if state then
-                -- Make the part neon, visible through walls, and show ESP
-                makePartVisibleThroughWalls(bestBrainrot.part)
+                -- Make the part neon, visible through walls, and show the name above the part
+                makePartVisibleThroughWalls(bestBrainrot.part, bestBrainrot.name)
                 
                 -- Create the label for the best brainrot at the correct part
                 createBrainrotLabel(bestBrainrot.part, bestBrainrot.name, bestBrainrot.raw)
@@ -140,7 +135,7 @@ if game.PlaceId == 109983668079237 then
                 print("Generation: " .. bestBrainrot.raw)
                 print("Value per second: " .. bestBrainrot.value)
             else
-                -- Reset the part's changes (remove ESP and neon effect)
+                -- Reset the part's changes (remove name and neon effect)
                 resetPart(bestBrainrot.part)
                 print("[Debug] Best Brainrot visibility toggled off.")
             end
