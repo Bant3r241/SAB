@@ -1,8 +1,8 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v52", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
-    -- Money per second parsing (using your proposed method)
+    -- Money per second parsing
     local function parseMoneyPerSec(text)
         local num, suffix = text:match("%$([%d%.]+)([KMBT]?)/s")
         local multipliers = {K = 1e3, M = 1e6, B = 1e9, T = 1e12}
@@ -11,41 +11,33 @@ if game.PlaceId == 109983668079237 then
 
     -- Create a BillboardGui with the name and money per second displayed
     local function createBrainrotLabel(part, name, value)
-        -- Create the BillboardGui
         local billboard = Instance.new("BillboardGui")
         billboard.Adornee = part
-        billboard.Size = UDim2.new(0, 200, 0, 50)  -- Set the size of the BillboardGui
-        billboard.StudsOffset = Vector3.new(0, 3, 0)  -- Adjust the position above the part
+        billboard.Size = UDim2.new(0, 200, 0, 50)
+        billboard.StudsOffset = Vector3.new(0, 3, 0)
         billboard.Parent = part
 
-        -- Create the TextLabel
         local textLabel = Instance.new("TextLabel")
         textLabel.Parent = billboard
         textLabel.BackgroundTransparency = 1
-        textLabel.Text = name .. "\n" .. value  -- Format the text as: Name\nGeneration
-        textLabel.TextColor3 = Color3.fromRGB(255, 255, 0)  -- Yellow text (as in the image)
+        textLabel.Text = name .. "\n" .. value
+        textLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
         textLabel.TextSize = 18
         textLabel.Font = Enum.Font.GothamBold
-        textLabel.TextStrokeTransparency = 0.8  -- Add a stroke to make text clearer
-        textLabel.TextScaled = true  -- Make sure the text scales properly
+        textLabel.TextStrokeTransparency = 0.8
+        textLabel.TextScaled = true
     end
 
-    -- Find the best brainrot in the game
+    -- Find the best brainrot
     local function findBestBrainrot()
         local best = {value = 0, raw = "", name = "", part = nil}
         local plotsFolder = workspace:FindFirstChild("Plots")
-        if not plotsFolder then
-            return best
-        end
+        if not plotsFolder then return best end
 
-        local foundBrainrotInPlot = false  -- Flag to check if there's any brainrot in the plot
-
-        -- Iterate through all the plots
+        local foundBrainrotInPlot = false
         for _, plot in pairs(plotsFolder:GetChildren()) do
             local podiums = plot:FindFirstChild("AnimalPodiums")
             if not podiums then continue end
-
-            -- Iterate through each podium in the plot
             for _, podium in pairs(podiums:GetChildren()) do
                 local base = podium:FindFirstChild("Base")
                 if not base then continue end
@@ -54,7 +46,7 @@ if game.PlaceId == 109983668079237 then
                 if not spawn then continue end
 
                 local attachment = spawn:FindFirstChild("Attachment")
-                if not attachment then continue end  -- Skip this podium if no brainrot
+                if not attachment then continue end
 
                 local animalOverhead = attachment:FindFirstChild("AnimalOverhead")
                 if not animalOverhead then continue end
@@ -66,8 +58,8 @@ if game.PlaceId == 109983668079237 then
                         best.value = value
                         best.raw = gen.Text
                         best.name = animalOverhead:FindFirstChild("DisplayName") and animalOverhead.DisplayName.Text or "Unknown"
-                        best.part = podium:FindFirstChild("Claim") and podium.Claim:FindFirstChild("Main")  -- Attach to Main part under Claim
-                        foundBrainrotInPlot = true  -- Found at least one brainrot in this plot
+                        best.part = podium:FindFirstChild("Claim") and podium.Claim:FindFirstChild("Main")
+                        foundBrainrotInPlot = true
                     end
                 end
             end
@@ -76,36 +68,39 @@ if game.PlaceId == 109983668079237 then
         if not foundBrainrotInPlot then
             print("[Debug] No brainrot found in this plot.")
         end
-
         return best
     end
 
-    -- Show or hide the best brainrot and highlight it
-    local function toggleBestBrainrotVisibility()
+    -- Toggle the visibility and highlight of the best brainrot
+    local function toggleBestBrainrotVisibility(state)
         local bestBrainrot = findBestBrainrot()
         if bestBrainrot.part then
-            -- Highlight the best brainrot part by changing its color
-            bestBrainrot.part.BrickColor = BrickColor.new("Bright red")  -- Example: highlight with red
-            -- Create the label for the best brainrot
-            createBrainrotLabel(bestBrainrot.part, bestBrainrot.name, bestBrainrot.raw)
-            -- Print to Output
-            print("[Best Brainrot]")
-            print("Name: " .. bestBrainrot.name)
-            print("Generation: " .. bestBrainrot.raw)
-            print("Value per second: " .. bestBrainrot.value)
+            if state then
+                bestBrainrot.part.BrickColor = BrickColor.new("Bright red")
+                createBrainrotLabel(bestBrainrot.part, bestBrainrot.name, bestBrainrot.raw)
+                print("[Best Brainrot]")
+                print("Name: " .. bestBrainrot.name)
+                print("Generation: " .. bestBrainrot.raw)
+                print("Value per second: " .. bestBrainrot.value)
+            else
+                -- Optionally hide or reset the part color
+                bestBrainrot.part.BrickColor = BrickColor.new("Medium stone grey")  -- Reset color
+                print("[Debug] Best Brainrot visibility toggled off.")
+            end
         else
             print("[Debug] No valid brainrot found.")
         end
     end
 
-    -- Create the UI button for showing the best brainrot
+    -- Create the UI toggle for showing the best brainrot
     local MiscTab = Window:MakeTab({Name="Misc", Icon="rbxassetid://4299432428", PremiumOnly=false})
 
-    -- Add the button for showing the best brainrot
-    MiscTab:AddButton({
-        Name = "Show Best Brainrot",  -- The label of the button
-        Callback = function()
-            toggleBestBrainrotVisibility()  -- Show the best brainrot when button is clicked
+    -- Add the toggle for showing the best brainrot
+    MiscTab:AddToggle({
+        Name = "Show Best Brainrot",
+        Default = false,  -- Default state (off)
+        Callback = function(state)
+            toggleBestBrainrotVisibility(state)
         end
     })
 
