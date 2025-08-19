@@ -1,9 +1,9 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot",HidePremium=false,IntroEnabled=false,IntroText="ABI",SaveConfig=true,ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
-    local Players, RunService = game:GetService("Players"), game:GetService("RunService")
-    local playerESPEnabled, brainrotESPEnabled, espObjects = false, false, {}
+    local Players, RunService, espObjects = game:GetService("Players"), game:GetService("RunService"), {}
+    local playerESPEnabled, brainrotESPEnabled = false, false
 
     local function createESP(part, text, color)
         if not part or espObjects[part] then return end
@@ -31,30 +31,31 @@ if game.PlaceId == 109983668079237 then
 
     local function parseMoney(text)
         local num, suffix = text:match("%$([%d%.]+)([KMBT]?)")
-        local mult = {K=1e3,M=1e6,B=1e9,T=1e12}
-        return tonumber(num) and tonumber(num)*(mult[suffix] or 1)
+        local mult = {K=1e3, M=1e6, B=1e9, T=1e12}
+        return num and tonumber(num) * (mult[suffix] or 1) or nil
     end
 
     local function getBestBrainrot()
-        local best, bestPart = 0, nil
-        for _, plot in pairs(workspace:FindFirstChild("Plots"):GetChildren()) do
+        local bestVal, bestModel, bestText = 0, nil, ""
+        local plots = workspace:FindFirstChild("Plots")
+        if not plots then return end
+        for _, plot in ipairs(plots:GetChildren()) do
             local podiums = plot:FindFirstChild("AnimalPodiums")
             if podiums then
-                for _, pod in pairs(podiums:GetChildren()) do
-                    local att = pod:FindFirstDescendant("Attachment")
-                    local gen = att and att:FindFirstChild("Generation")
-                    local name = att and att:FindFirstChild("DisplayName")
-                    local part = att and att.Parent
-                    if gen and name and gen:IsA("TextLabel") then
+                for _, podium in ipairs(podiums:GetChildren()) do
+                    local attach = podium:FindFirstDescendant("Attachment")
+                    local gen = attach and attach:FindFirstChild("Generation")
+                    local name = attach and attach:FindFirstChild("DisplayName")
+                    if gen and name and gen:IsA("TextLabel") and name:IsA("TextLabel") then
                         local val = parseMoney(gen.Text)
-                        if val and val > best then
-                            best, bestPart = val, part
+                        if val and val > bestVal then
+                            bestVal, bestModel, bestText = val, podium, name.Text.." - "..gen.Text
                         end
                     end
                 end
             end
         end
-        return bestPart
+        return bestModel, bestText
     end
 
     local function toggleBrainrotESP(state)
@@ -63,13 +64,12 @@ if game.PlaceId == 109983668079237 then
             if gui and gui.Adornee and gui.Adornee.Name == "BrainrotESP" then removeESP(part) end
         end
         if not state then return end
-        local bestPart = getBestBrainrot()
-        if bestPart then
-            local attach = bestPart:FindFirstChild("Attachment")
-            local gen = attach and attach:FindFirstChild("Generation")
-            local name = attach and attach:FindFirstChild("DisplayName")
-            if gen and name then
-                createESP(bestPart, name.Text .. " - " .. gen.Text, Color3.fromRGB(255,215,0)) -- Gold
+        local model, text = getBestBrainrot()
+        if model then
+            local part = model:FindFirstDescendantWhichIsA("BasePart")
+            if part then
+                part.Name = "BrainrotESP"
+                createESP(part, text, Color3.fromRGB(255, 215, 0))
             end
         end
     end
