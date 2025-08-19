@@ -1,95 +1,220 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot",HidePremium=false,IntroEnabled=false,IntroText="ABI",SaveConfig=true,ConfigFolder="XlurConfig"})
 
-    local Players, RunService, espObjects = game:GetService("Players"), game:GetService("RunService"), {}
-    local playerESPEnabled, brainrotESPEnabled = false, false
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
 
-    local function createESP(part, text, color)
-        if not part or espObjects[part] then return end
-        local bb = Instance.new("BillboardGui", part)
-        bb.Adornee, bb.Size, bb.StudsOffset, bb.AlwaysOnTop = part, UDim2.new(0,100,0,30), Vector3.new(0,3,0), true
-        local lbl = Instance.new("TextLabel", bb)
-        lbl.BackgroundTransparency, lbl.Size, lbl.Text, lbl.TextColor3, lbl.TextStrokeTransparency, lbl.Font, lbl.TextScaled =
-            1, UDim2.new(1,0,1,0), text, color, 0, Enum.Font.SourceSansBold, true
-        espObjects[part] = bb
+    -- Player ESP variables
+    local playerESPEnabled = false
+    local playerESPObjects = {}
+
+    -- Best Brainrot ESP variables
+    local brainrotESPEnabled = false
+    local brainrotESPObjects = {}
+
+    -- Utility to create ESP BillboardGui
+    local function createESP(part, textLines)
+        if not part then return end
+        if brainrotESPObjects[part] or playerESPObjects[part] then return end
+        
+        local bb = Instance.new("BillboardGui")
+        bb.Adornee = part
+        bb.Size = UDim2.new(0, 120, 0, 40)
+        bb.StudsOffset = Vector3.new(0, 3, 0)
+        bb.AlwaysOnTop = true
+
+        for i, text in ipairs(textLines) do
+            local lbl = Instance.new("TextLabel", bb)
+            lbl.BackgroundTransparency = 1
+            lbl.Size = UDim2.new(1, 0, 0, 20)
+            lbl.Position = UDim2.new(0, 0, 0, (i-1)*20)
+            lbl.Text = text
+            lbl.TextColor3 = Color3.fromRGB(0, 162, 255)
+            lbl.TextStrokeTransparency = 0
+            lbl.Font = Enum.Font.SourceSansBold
+            lbl.TextScaled = true
+        end
+
+        return bb
     end
 
-    local function removeESP(part)
-        if espObjects[part] then espObjects[part]:Destroy() espObjects[part] = nil end
+    -- Remove ESP helper
+    local function removeESP(objectsTable, part)
+        if objectsTable[part] then
+            objectsTable[part]:Destroy()
+            objectsTable[part] = nil
+        end
     end
 
+    -- Player ESP toggle function
     local function togglePlayerESP(state)
         playerESPEnabled = state
         for _, p in pairs(Players:GetPlayers()) do
             local hrp = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
-                if state then createESP(hrp, p.Name, Color3.fromRGB(0,162,255)) else removeESP(hrp) end
+                if state then
+                    playerESPObjects[hrp] = createESP(hrp, {p.Name})
+                else
+                    removeESP(playerESPObjects, hrp)
+                end
             end
         end
     end
 
-    local function parseMoney(text)
-        local num, suffix = text:match("%$([%d%.]+)([KMBT]?)")
-        local mult = {K=1e3, M=1e6, B=1e9, T=1e12}
-        return num and tonumber(num) * (mult[suffix] or 1) or nil
+    -- Best Brainrot ESP toggle function
+    local function toggleBrainrotESP(state)
+        brainrotESPEnabled = state
+        if not state then
+            -- Clear existing ESPs when toggled off
+            for part, esp in pairs(brainrotESPObjects) do
+                esp:Destroy()
+            end
+            brainrotESPObjects = {}
+        end
     end
 
-    local function getBestBrainrot()
-        local bestVal, bestModel, bestText = 0, nil, ""
-        local plots = workspace:FindFirstChild("Plots")
-        if not plots then return end
-        for _, plot in ipairs(plots:GetChildren()) do
+    -- Parse money per second text, e.g. "$3.5M/s"
+    local function parseMoneyPerSec(text)
+        local num, suffix = text:match("%$([%d%.]+)([KMBT]?)")
+        if not num then return nil end
+        num = tonumber(num)
+        if not num then return nil end
+        local multipliers = {
+            K = 1e3,
+            M = 1e6,
+            B = 1e9,
+            T = 1e12
+        }
+        return num * (multipliers[suffix] or 1)
+    end
+
+    -- Find all brainrots and update ESP
+    local function updateBrainrotESP()
+        if not brainrotESPEnabled then return end
+
+        local plotsFolder = workspace:FindFirstChild("Plots")
+        if not plotsFolder then return end
+
+        -- Keep track of brainrot parts seen this frame to clean up old ESPs
+        local currentParts = {}
+
+        for _, plot in pairs(plotsFolder:GetChildren()) do
             local podiums = plot:FindFirstChild("AnimalPodiums")
             if podiums then
-                for _, podium in ipairs(podiums:GetChildren()) do
-                    local attach = podium:FindFirstDescendant("Attachment")
-                    local gen = attach and attach:FindFirstChild("Generation")
-                    local name = attach and attach:FindFirstChild("DisplayName")
-                    if gen and name and gen:IsA("TextLabel") and name:IsA("TextLabel") then
-                        local val = parseMoney(gen.Text)
-                        if val and val > bestVal then
-                            bestVal, bestModel, bestText = val, podium, name.Text.." - "..gen.Text
+                for _, podium in pairs(podiums:GetChildren()) do
+                    local base = podium:FindFirstChild("Base")
+                    if base and base:FindFirstChild("Spawn") then
+                        local attach = base.Spawn:FindFirstChild("Attachment")
+                        if attach and attach:FindFirstChild("AnimalOverhead") then
+                            local animalOverhead = attach.AnimalOverhead
+
+                            local nameLabel, genLabel
+                            for _, child in pairs(animalOverhead:GetChildren()) do
+                                if child:IsA("TextLabel") then
+                                    if child.Name == "DisplayName" then
+                                        nameLabel = child
+                                    elseif child.Name == "Generation" then
+                                        genLabel = child
+                                    end
+                                end
+                            end
+
+                            if nameLabel and genLabel then
+                                local moneyText = genLabel.Text -- e.g. "$3.5M/s"
+                                local nameText = nameLabel.Text
+
+                                local espText = {
+                                    nameText,
+                                    moneyText
+                                }
+
+                                currentParts[base] = true
+
+                                if not brainrotESPObjects[base] then
+                                    brainrotESPObjects[base] = createESP(base, espText)
+                                    brainrotESPObjects[base].Parent = game.CoreGui -- or workspace, depends on your needs
+                                else
+                                    -- Update existing ESP text
+                                    local bb = brainrotESPObjects[base]
+                                    for i, lbl in ipairs(bb:GetChildren()) do
+                                        if lbl:IsA("TextLabel") then
+                                            lbl.Text = espText[i]
+                                        end
+                                    end
+                                end
+                            end
                         end
                     end
                 end
             end
         end
-        return bestModel, bestText
-    end
 
-    local function toggleBrainrotESP(state)
-        brainrotESPEnabled = state
-        for part, gui in pairs(espObjects) do
-            if gui and gui.Adornee and gui.Adornee.Name == "BrainrotESP" then removeESP(part) end
-        end
-        if not state then return end
-        local model, text = getBestBrainrot()
-        if model then
-            local part = model:FindFirstDescendantWhichIsA("BasePart")
-            if part then
-                part.Name = "BrainrotESP"
-                createESP(part, text, Color3.fromRGB(255, 215, 0))
+        -- Remove ESPs for brainrots that no longer exist or visible
+        for part, esp in pairs(brainrotESPObjects) do
+            if not currentParts[part] or not part.Parent then
+                removeESP(brainrotESPObjects, part)
             end
         end
     end
 
-    RunService.RenderStepped:Connect(function()
-        if playerESPEnabled then togglePlayerESP(true) end
-        if brainrotESPEnabled then toggleBrainrotESP(true) end
-        for part in pairs(espObjects) do if not part or not part.Parent then removeESP(part) end end
-    end)
-
+    -- Cleanup old player ESPs on character removing
     Players.PlayerAdded:Connect(function(p)
         p.CharacterAdded:Connect(function(c)
             local hrp = c:WaitForChild("HumanoidRootPart", 5)
-            if playerESPEnabled and hrp then createESP(hrp, p.Name, Color3.fromRGB(0,162,255)) end
+            if playerESPEnabled and hrp then
+                playerESPObjects[hrp] = createESP(hrp, {p.Name})
+                playerESPObjects[hrp].Parent = game.CoreGui
+            end
+        end)
+        p.CharacterRemoving:Connect(function(c)
+            local hrp = c:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                removeESP(playerESPObjects, hrp)
+            end
         end)
     end)
 
+    -- Update player ESPs on toggle
+    for _, p in pairs(Players:GetPlayers()) do
+        local hrp = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+        if hrp and playerESPEnabled then
+            playerESPObjects[hrp] = createESP(hrp, {p.Name})
+            playerESPObjects[hrp].Parent = game.CoreGui
+        end
+    end
+
+    -- UI setup
     local MiscTab = Window:MakeTab({Name="Misc", Icon="rbxassetid://4299432428", PremiumOnly=false})
-    MiscTab:AddToggle({Name="Player ESP", Default=false, Callback=togglePlayerESP})
-    MiscTab:AddToggle({Name="Best Brainrot ESP", Default=false, Callback=toggleBrainrotESP})
+
+    MiscTab:AddToggle({
+        Name = "Player ESP",
+        Default = false,
+        Callback = togglePlayerESP
+    })
+
+    MiscTab:AddToggle({
+        Name = "Best Brainrot ESP",
+        Default = false,
+        Callback = toggleBrainrotESP
+    })
 
     OrionLib:Init()
+
+    -- RunService loop to update ESP
+    RunService.RenderStepped:Connect(function()
+        if playerESPEnabled then
+            togglePlayerESP(true)  -- Keeps player ESP updated
+        end
+        if brainrotESPEnabled then
+            updateBrainrotESP()
+        end
+
+        -- Cleanup player ESP for removed parts
+        for part in pairs(playerESPObjects) do
+            if not part or not part.Parent then
+                removeESP(playerESPObjects, part)
+            end
+        end
+    end)
 end
