@@ -186,27 +186,7 @@ if game.PlaceId == 109983668079237 then
         end
     )
 
-    local library = loadstring(game:HttpGet(("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wall%20v3")))()
-    local w = library:CreateWindow("Simple ESP")
-
-    local b = w:CreateFolder("Main")
-
-    b:Toggle(
-        "ESP",
-        function(bool)
-            _G.ESP = bool
-        end
-    )
-
-    b:ColorPicker(
-        "ESP Color",
-        Color3.fromRGB(255, 255, 255),
-        function(color)
-            _G.ESPColor = color
-        end
-    )
-
-    -- Create another folder for Brainrot Visibility toggle
+    -- OrionLib UI
     local MiscTab = Window:MakeTab({Name="Misc", Icon="rbxassetid://4299432428", PremiumOnly=false})
 
     -- Add the toggle for showing the best brainrot
@@ -215,6 +195,24 @@ if game.PlaceId == 109983668079237 then
         Default = false,  -- Default state (off)
         Callback = function(state)
             toggleBestBrainrotVisibility(state)
+        end
+    })
+
+    -- Add the ESP Toggle
+    MiscTab:AddToggle({
+        Name = "Player ESP",
+        Default = false,  -- Default state (off)
+        Callback = function(state)
+            _G.ESP = state
+        end
+    })
+
+    -- Add the ESP Color Picker
+    MiscTab:AddColorPicker({
+        Name = "ESP Color",
+        Default = Color3.fromRGB(255, 255, 255),  -- Default color (White)
+        Callback = function(color)
+            _G.ESPColor = color
         end
     })
 
