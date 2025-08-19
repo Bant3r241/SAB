@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v4", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService, espObjects = game:GetService("Players"), game:GetService("RunService"), {}
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -8,15 +8,26 @@ if game.PlaceId == 109983668079237 then
     local function createESP(part, text, color)
         if not part or espObjects[part] then return end
         local bb = Instance.new("BillboardGui", part)
-        bb.Adornee, bb.Size, bb.StudsOffset, bb.AlwaysOnTop = part, UDim2.new(0,100,0,30), Vector3.new(0,3,0), true
+        bb.Adornee = part
+        bb.Size = UDim2.new(0, 100, 0, 30)
+        bb.StudsOffset = Vector3.new(0, 3, 0)
+        bb.AlwaysOnTop = true
         local lbl = Instance.new("TextLabel", bb)
-        lbl.BackgroundTransparency, lbl.Size, lbl.Text, lbl.TextColor3, lbl.TextStrokeTransparency, lbl.Font, lbl.TextScaled =
-            1, UDim2.new(1,0,1,0), text, color, 0, Enum.Font.SourceSansBold, true
+        lbl.BackgroundTransparency = 1
+        lbl.Size = UDim2.new(1, 0, 1, 0)
+        lbl.Text = text
+        lbl.TextColor3 = color
+        lbl.TextStrokeTransparency = 0
+        lbl.Font = Enum.Font.SourceSansBold
+        lbl.TextScaled = true
         espObjects[part] = bb
     end
 
     local function removeESP(part)
-        if espObjects[part] then espObjects[part]:Destroy() espObjects[part] = nil end
+        if espObjects[part] then
+            espObjects[part]:Destroy()
+            espObjects[part] = nil
+        end
     end
 
     local function togglePlayerESP(state)
@@ -24,13 +35,16 @@ if game.PlaceId == 109983668079237 then
         for _, p in pairs(Players:GetPlayers()) do
             local hrp = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
-                if state then createESP(hrp, p.Name, Color3.fromRGB(0,162,255)) else removeESP(hrp) end
+                if state then
+                    createESP(hrp, p.Name, Color3.fromRGB(0, 162, 255))
+                else
+                    removeESP(hrp)
+                end
             end
         end
     end
 
     local function parseMoneyPerSec(text)
-        -- Example: "$123.4/s", "$1.2K/s"
         local num, suffix = text:match("%$([%d%.]+)([KMBT]?)/s")
         local mult = {K=1e3, M=1e6, B=1e9, T=1e12}
         return num and tonumber(num) * (mult[suffix] or 1) or nil
@@ -67,8 +81,8 @@ if game.PlaceId == 109983668079237 then
                                             best.value = value
                                             best.raw = text
                                             best.name = nameLabel and nameLabel.Text or "Unknown"
-                                            -- Save the Base part to attach ESP
-                                            best.part = base
+                                            -- Attach ESP to the Spawn part, NOT Base model
+                                            best.part = base:FindFirstChild("Spawn")
                                         end
                                     end
                                 end
@@ -86,7 +100,7 @@ if game.PlaceId == 109983668079237 then
 
         -- Clear old ESP for brainrot
         for part, gui in pairs(espObjects) do
-            if gui and gui.Adornee and gui.Adornee.Name == "Base" then
+            if gui and gui.Adornee and gui.Adornee.Name == "Spawn" then
                 removeESP(part)
             end
         end
@@ -95,7 +109,6 @@ if game.PlaceId == 109983668079237 then
 
         local best = findBestBrainrot()
         if best.part then
-            -- Create ESP on the base part with the name and money per second text
             createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0))
         end
     end
@@ -113,7 +126,9 @@ if game.PlaceId == 109983668079237 then
     Players.PlayerAdded:Connect(function(p)
         p.CharacterAdded:Connect(function(c)
             local hrp = c:WaitForChild("HumanoidRootPart", 5)
-            if playerESPEnabled and hrp then createESP(hrp, p.Name, Color3.fromRGB(0,162,255)) end
+            if playerESPEnabled and hrp then
+                createESP(hrp, p.Name, Color3.fromRGB(0, 162, 255))
+            end
         end)
     end)
 
