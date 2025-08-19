@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing
     local function parseMoneyPerSec(text)
@@ -26,6 +26,22 @@ if game.PlaceId == 109983668079237 then
         textLabel.Font = Enum.Font.GothamBold
         textLabel.TextStrokeTransparency = 0.8
         textLabel.TextScaled = true
+    end
+
+    -- Make the part glow yellow and visible through walls
+    local function makePartGlow(part)
+        -- Set the part's material to Neon for a glowing effect
+        part.Material = Enum.Material.Neon
+        part.Color = Color3.fromRGB(255, 255, 0)  -- Yellow color
+        part.CanCollide = false  -- Make it passable through walls
+        part.Transparency = 0.5  -- Make it semi-transparent (so it can be seen through walls)
+
+        -- Optionally add a light to make it glow more
+        local pointLight = Instance.new("PointLight")
+        pointLight.Parent = part
+        pointLight.Color = Color3.fromRGB(255, 255, 0)
+        pointLight.Range = 20  -- Set range of the light (adjust for visibility)
+        pointLight.Brightness = 10  -- Increase brightness for glow effect
     end
 
     -- Find the best brainrot
@@ -82,6 +98,9 @@ if game.PlaceId == 109983668079237 then
         local bestBrainrot = findBestBrainrot()
         if bestBrainrot.part then
             if state then
+                -- Make the part glow and visible through walls
+                makePartGlow(bestBrainrot.part)
+                
                 -- Create the label for the best brainrot at the correct part
                 createBrainrotLabel(bestBrainrot.part, bestBrainrot.name, bestBrainrot.raw)
                 print("[Best Brainrot]")
@@ -89,7 +108,7 @@ if game.PlaceId == 109983668079237 then
                 print("Generation: " .. bestBrainrot.raw)
                 print("Value per second: " .. bestBrainrot.value)
             else
-                -- Optionally hide or reset the part color (not changing color, just toggling visibility)
+                -- Optionally hide or reset the part color and glow effect
                 print("[Debug] Best Brainrot visibility toggled off.")
             end
         else
