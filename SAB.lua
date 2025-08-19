@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing (using your proposed method)
     local function parseMoneyPerSec(text)
@@ -114,8 +114,8 @@ if game.PlaceId == 109983668079237 then
 
     -- Create the UI toggle button for showing/hiding the best brainrot
     local MiscTab = Window:MakeTab({Name="Misc", Icon="rbxassetid://4299432428", PremiumOnly=false})
-    
-    -- Add Toggle to control visibility
+
+    -- Correctly Add Toggle
     MiscTab:AddToggle({
         Name = "Show Best Brainrot",  -- The label of the toggle
         Default = false,  -- Start in off position
