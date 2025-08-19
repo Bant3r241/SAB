@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing
     local function parseMoneyPerSec(text)
@@ -158,7 +158,7 @@ if game.PlaceId == 109983668079237 then
                         if not v.Character:FindFirstChild("Highlight") then
                             highlight.FillTransparency = 1
                             highlight:Clone().Parent = v.Character
-                            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                            highlight.OutlineColor = _G.ESPColor
                         end
 
                         game.Players.PlayerAdded:Connect(
@@ -168,7 +168,7 @@ if game.PlaceId == 109983668079237 then
                                         if not char:FindFirstChild("Highlight") then
                                             highlight.FillTransparency = 1
                                             highlight:Clone().Parent = char
-                                            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                                            highlight.OutlineColor = _G.ESPColor
                                         end
                                     end
                                 )
