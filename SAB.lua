@@ -1,12 +1,16 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v4", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService, espObjects = game:GetService("Players"), game:GetService("RunService"), {}
     local playerESPEnabled, brainrotESPEnabled = false, false
 
     local function createESP(part, text, color)
-        if not part or espObjects[part] then return end
+        if not part then
+            warn("[ESP] createESP called without a valid part!")
+            return
+        end
+        if espObjects[part] then return end
         local bb = Instance.new("BillboardGui", part)
         bb.Adornee = part
         bb.Size = UDim2.new(0, 100, 0, 30)
@@ -21,17 +25,20 @@ if game.PlaceId == 109983668079237 then
         lbl.Font = Enum.Font.SourceSansBold
         lbl.TextScaled = true
         espObjects[part] = bb
+        print("[ESP] Created ESP for part:", part:GetFullName(), "with text:", text)
     end
 
     local function removeESP(part)
         if espObjects[part] then
             espObjects[part]:Destroy()
             espObjects[part] = nil
+            print("[ESP] Removed ESP for part:", part:GetFullName())
         end
     end
 
     local function togglePlayerESP(state)
         playerESPEnabled = state
+        print("[ESP] Player ESP toggled:", state)
         for _, p in pairs(Players:GetPlayers()) do
             local hrp = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
@@ -40,6 +47,8 @@ if game.PlaceId == 109983668079237 then
                 else
                     removeESP(hrp)
                 end
+            else
+                warn("[ESP] Player " .. p.Name .. " has no HumanoidRootPart!")
             end
         end
     end
@@ -53,50 +62,81 @@ if game.PlaceId == 109983668079237 then
     local function findBestBrainrot()
         local best = {value = 0, raw = "", name = "", part = nil}
         local plotsFolder = workspace:FindFirstChild("Plots")
-        if plotsFolder then
-            for _, plot in pairs(plotsFolder:GetChildren()) do
-                local podiums = plot:FindFirstChild("AnimalPodiums")
-                if podiums then
-                    for _, podium in pairs(podiums:GetChildren()) do
-                        local base = podium:FindFirstChild("Base")
-                        if base and base:FindFirstChild("Spawn") then
-                            local attach = base.Spawn:FindFirstChild("Attachment")
-                            if attach and attach:FindFirstChild("AnimalOverhead") then
-                                local animalOverhead = attach.AnimalOverhead
+        if not plotsFolder then
+            warn("[Brainrot] No 'Plots' folder found in workspace!")
+            return best
+        end
 
-                                local nameLabel
-                                for _, child in pairs(animalOverhead:GetChildren()) do
-                                    if child:IsA("TextLabel") and child.Name == "DisplayName" then
-                                        nameLabel = child
-                                        break
-                                    end
-                                end
+        for _, plot in pairs(plotsFolder:GetChildren()) do
+            local podiums = plot:FindFirstChild("AnimalPodiums")
+            if not podiums then
+                warn("[Brainrot] Plot '" .. plot.Name .. "' missing 'AnimalPodiums'")
+                continue
+            end
 
-                                local gen = animalOverhead:FindFirstChild("Generation")
-                                if gen and gen:IsA("TextLabel") then
-                                    local text = gen.Text
-                                    if text and text:find("/s") then
-                                        local value = parseMoneyPerSec(text)
-                                        if value and value > best.value then
-                                            best.value = value
-                                            best.raw = text
-                                            best.name = nameLabel and nameLabel.Text or "Unknown"
-                                            -- Attach ESP to the Spawn part, NOT Base model
-                                            best.part = base:FindFirstChild("Spawn")
-                                        end
-                                    end
-                                end
-                            end
-                        end
+            for _, podium in pairs(podiums:GetChildren()) do
+                local base = podium:FindFirstChild("Base")
+                if not base then
+                    warn("[Brainrot] Podium '" .. podium.Name .. "' missing 'Base'")
+                    continue
+                end
+
+                local spawn = base:FindFirstChild("Spawn")
+                if not spawn then
+                    warn("[Brainrot] Base '" .. base.Name .. "' missing 'Spawn'")
+                    continue
+                end
+
+                local attach = spawn:FindFirstChild("Attachment")
+                if not attach then
+                    warn("[Brainrot] Spawn '" .. spawn.Name .. "' missing 'Attachment'")
+                    continue
+                end
+
+                local animalOverhead = attach:FindFirstChild("AnimalOverhead")
+                if not animalOverhead then
+                    warn("[Brainrot] Attachment missing 'AnimalOverhead'")
+                    continue
+                end
+
+                local nameLabel
+                for _, child in pairs(animalOverhead:GetChildren()) do
+                    if child:IsA("TextLabel") and child.Name == "DisplayName" then
+                        nameLabel = child
+                        break
                     end
                 end
+
+                local gen = animalOverhead:FindFirstChild("Generation")
+                if not gen or not gen:IsA("TextLabel") then
+                    warn("[Brainrot] AnimalOverhead missing 'Generation' TextLabel")
+                    continue
+                end
+
+                local text = gen.Text
+                if text and text:find("/s") then
+                    local value = parseMoneyPerSec(text)
+                    if value and value > best.value then
+                        best.value = value
+                        best.raw = text
+                        best.name = nameLabel and nameLabel.Text or "Unknown"
+                        best.part = spawn -- Attach ESP to Spawn part
+                        print("[Brainrot] New best found:", best.name, best.raw, "at", spawn:GetFullName())
+                    end
+                else
+                    warn("[Brainrot] Generation text does not contain '/s':", tostring(text))
+                end
             end
+        end
+        if best.value == 0 then
+            warn("[Brainrot] No brainrot found with valid money per second!")
         end
         return best
     end
 
     local function toggleBrainrotESP(state)
         brainrotESPEnabled = state
+        print("[ESP] Brainrot ESP toggled:", state)
 
         -- Clear old ESP for brainrot
         for part, gui in pairs(espObjects) do
@@ -110,6 +150,8 @@ if game.PlaceId == 109983668079237 then
         local best = findBestBrainrot()
         if best.part then
             createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0))
+        else
+            warn("[ESP] No best brainrot part found to attach ESP!")
         end
     end
 
