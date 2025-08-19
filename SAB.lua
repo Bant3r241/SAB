@@ -206,5 +206,17 @@ if game.PlaceId == 109983668079237 then
         end
     )
 
+    -- Create another folder for Brainrot Visibility toggle
+    local MiscTab = Window:MakeTab({Name="Misc", Icon="rbxassetid://4299432428", PremiumOnly=false})
+
+    -- Add the toggle for showing the best brainrot
+    MiscTab:AddToggle({
+        Name = "Show Best Brainrot",
+        Default = false,  -- Default state (off)
+        Callback = function(state)
+            toggleBestBrainrotVisibility(state)
+        end
+    })
+
     OrionLib:Init()
 end
