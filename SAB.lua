@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing
     local function parseMoneyPerSec(text)
@@ -28,31 +28,39 @@ if game.PlaceId == 109983668079237 then
         textLabel.TextScaled = true
     end
 
-    -- Make the part glow yellow and visible through walls
-    local function makePartGlow(part)
-        -- Set the part's material to Neon for internal glowing effect
+    -- Make the part neon and visible through walls (ESP-like effect)
+    local function makePartVisibleThroughWalls(part)
+        -- Set the part's material to Neon for a glowing effect
         part.Material = Enum.Material.Neon
-        part.Color = Color3.fromRGB(255, 255, 0)  -- Yellow color
-        part.CanCollide = false  -- Make it passable through walls (IMPORTANT)
-        part.Transparency = 0.1  -- More visible transparency for glowing effect
+        part.Color = Color3.fromRGB(0, 255, 255)  -- Neon cyan (adjust as needed)
+        part.CanCollide = false  -- Make it passable through walls
+        part.Transparency = 0.1  -- Low transparency for better visibility
 
-        -- Add a point light for the glowing effect
-        local pointLight = Instance.new("PointLight")
-        pointLight.Parent = part
-        pointLight.Color = Color3.fromRGB(255, 255, 0)
-        pointLight.Range = 20  -- Increased range for stronger glow
-        pointLight.Brightness = 15  -- Adjusted brightness for more subtle glow
+        -- Create an ESP-like effect (BillboardGui with a frame for the object)
+        local esp = Instance.new("BillboardGui")
+        esp.Adornee = part
+        esp.Parent = part
+        esp.Size = UDim2.new(0, 100, 0, 100)  -- Size of the ESP box
+        esp.StudsOffset = Vector3.new(0, 3, 0)  -- Adjust offset as needed
 
-        -- Create a selection box around the part to highlight it
-        local selectionBox = Instance.new("SelectionBox")
-        selectionBox.Parent = part
-        selectionBox.Adornee = part
-        selectionBox.Color3 = Color3.fromRGB(255, 255, 0)  -- Yellow outline
-        selectionBox.LineThickness = 0.1  -- Set the thickness of the highlight lines
-        selectionBox.Transparency = 0.5  -- Slight transparency for a more subtle outline effect
+        local espFrame = Instance.new("Frame")
+        espFrame.Size = UDim2.new(1, 0, 1, 0)
+        espFrame.BackgroundColor3 = Color3.fromRGB(0, 255, 255)  -- Neon color
+        espFrame.BackgroundTransparency = 0.5  -- Slight transparency for the ESP
+        espFrame.BorderSizePixel = 0  -- No border
+        espFrame.Parent = esp
+
+        -- Optional: Set an outline effect around the ESP frame
+        local outline = Instance.new("Frame")
+        outline.Size = UDim2.new(1, 4, 1, 4)  -- Outline size
+        outline.Position = UDim2.new(0, -2, 0, -2)  -- Offset for outline
+        outline.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red outline color
+        outline.BackgroundTransparency = 0.2  -- Slight transparency for outline
+        outline.BorderSizePixel = 0  -- No border
+        outline.Parent = esp
     end
 
-    -- Reset the part back to normal (remove the glow effect)
+    -- Reset the part back to normal (remove glow and ESP-like effect)
     local function resetPart(part)
         -- Reset the part's material to smooth plastic (or whatever material it was)
         part.Material = Enum.Material.SmoothPlastic
@@ -60,16 +68,9 @@ if game.PlaceId == 109983668079237 then
         part.CanCollide = true  -- Make it collide with objects
         part.Transparency = 0  -- Reset transparency
 
-        -- Remove the point light (if exists)
+        -- Remove the BillboardGui and all its children
         for _, child in pairs(part:GetChildren()) do
-            if child:IsA("PointLight") then
-                child:Destroy()
-            end
-        end
-
-        -- Remove the selection box (if exists)
-        for _, child in pairs(part:GetChildren()) do
-            if child:IsA("SelectionBox") then
+            if child:IsA("BillboardGui") then
                 child:Destroy()
             end
         end
@@ -129,8 +130,8 @@ if game.PlaceId == 109983668079237 then
         local bestBrainrot = findBestBrainrot()
         if bestBrainrot.part then
             if state then
-                -- Make the part glow and visible through walls
-                makePartGlow(bestBrainrot.part)
+                -- Make the part neon, visible through walls, and show ESP
+                makePartVisibleThroughWalls(bestBrainrot.part)
                 
                 -- Create the label for the best brainrot at the correct part
                 createBrainrotLabel(bestBrainrot.part, bestBrainrot.name, bestBrainrot.raw)
@@ -139,7 +140,7 @@ if game.PlaceId == 109983668079237 then
                 print("Generation: " .. bestBrainrot.raw)
                 print("Value per second: " .. bestBrainrot.value)
             else
-                -- Reset the part's changes (remove glow and selection box)
+                -- Reset the part's changes (remove ESP and neon effect)
                 resetPart(bestBrainrot.part)
                 print("[Debug] Best Brainrot visibility toggled off.")
             end
