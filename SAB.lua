@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v1", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing
     local function parseMoneyPerSec(text)
@@ -34,14 +34,14 @@ if game.PlaceId == 109983668079237 then
         part.Material = Enum.Material.Neon
         part.Color = Color3.fromRGB(255, 255, 0)  -- Yellow color
         part.CanCollide = false  -- Make it passable through walls
-        part.Transparency = 0.5  -- Make it semi-transparent (so it can be seen through walls)
+        part.Transparency = 0.3  -- Adjusted transparency for a subtler effect
 
-        -- Optionally add a light to make it glow more
+        -- Optionally add a light to make it glow more, but with reduced brightness
         local pointLight = Instance.new("PointLight")
         pointLight.Parent = part
         pointLight.Color = Color3.fromRGB(255, 255, 0)
-        pointLight.Range = 20  -- Set range of the light (adjust for visibility)
-        pointLight.Brightness = 10  -- Increase brightness for glow effect
+        pointLight.Range = 10  -- Adjusted range for less intensity
+        pointLight.Brightness = 3  -- Reduced brightness for subtler glow
 
         -- Create a selection box around the part to highlight it
         local selectionBox = Instance.new("SelectionBox")
@@ -49,7 +49,7 @@ if game.PlaceId == 109983668079237 then
         selectionBox.Adornee = part
         selectionBox.Color3 = Color3.fromRGB(255, 255, 0)  -- Yellow outline
         selectionBox.LineThickness = 0.05  -- Set the thickness of the highlight lines
-        selectionBox.Transparency = 0.7  -- Make the highlight semi-transparent
+        selectionBox.Transparency = 0.6  -- Reduced transparency for a more subtle highlight
     end
 
     -- Reset the part back to normal (remove the glow effect)
