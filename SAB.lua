@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing
     local function parseMoneyPerSec(text)
@@ -180,6 +180,23 @@ if game.PlaceId == 109983668079237 then
                         local hl = v.Character:FindFirstChild("Highlight")
                         hl.Enabled = _G.ESP
                         hl.OutlineColor = _G.ESPColor
+
+                        -- Create a label for player's name on the ESP
+                        local billboard = Instance.new("BillboardGui")
+                        billboard.Adornee = v.Character:FindFirstChild("Head")
+                        billboard.Size = UDim2.new(0, 100, 0, 50)
+                        billboard.StudsOffset = Vector3.new(0, 3, 0)
+                        billboard.Parent = v.Character:FindFirstChild("Head")
+
+                        local textLabel = Instance.new("TextLabel")
+                        textLabel.Parent = billboard
+                        textLabel.BackgroundTransparency = 1
+                        textLabel.Text = v.Name  -- Display the player's name
+                        textLabel.TextColor3 = _G.ESPColor
+                        textLabel.TextSize = 18
+                        textLabel.Font = Enum.Font.GothamBold
+                        textLabel.TextStrokeTransparency = 0.8
+                        textLabel.TextScaled = true
                     end
                 end
             )
