@@ -1,20 +1,77 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name = "ABI │ Steal A Brainrot", IntroEnabled = false})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
-    -- Tabs
-    local MainTab = Window:MakeTab({Name = "Main", Icon = "rbxassetid://4299432428", PremiumOnly = false})
-    local EspTab = Window:MakeTab({Name = "ESP", Icon = "rbxassetid://4299432428", PremiumOnly = false})
-    local MiscTab = Window:MakeTab({Name = "Misc", Icon = "rbxassetid://4299432428", PremiumOnly = false})
-
-    -- Money per second parsing function
+    -- Money per second parsing
     local function parseMoneyPerSec(text)
         local num, suffix = text:match("%$([%d%.]+)([KMBT]?)/s")
         local multipliers = {K = 1e3, M = 1e6, B = 1e9, T = 1e12}
         return num and tonumber(num) * (multipliers[suffix] or 1) or nil
     end
 
-    -- Function to find the best brainrot in the game
+    -- Create a BillboardGui with the name and money per second displayed
+    local function createBrainrotLabel(part, name, value)
+        local billboard = Instance.new("BillboardGui")
+        billboard.Adornee = part
+        billboard.Size = UDim2.new(0, 200, 0, 50)
+        billboard.StudsOffset = Vector3.new(0, 3, 0)
+        billboard.Parent = part
+
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Parent = billboard
+        textLabel.BackgroundTransparency = 1
+        textLabel.Text = name .. "\n" .. value
+        textLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+        textLabel.TextSize = 18
+        textLabel.Font = Enum.Font.GothamBold
+        textLabel.TextStrokeTransparency = 0.8
+        textLabel.TextScaled = true
+    end
+
+    -- Make the part neon and visible through walls (ESP-like effect)
+    local function makePartVisibleThroughWalls(part, name)
+        -- Set the part's material to Neon for a glowing effect
+        part.Material = Enum.Material.Neon
+        part.Color = Color3.fromRGB(0, 255, 255)  -- Neon cyan (adjust as needed)
+        part.CanCollide = false  -- Make it passable through walls
+        part.Transparency = 0.1  -- Low transparency for better visibility
+
+        -- Create a BillboardGui to display the brainrot's name above the part
+        local billboard = Instance.new("BillboardGui")
+        billboard.Adornee = part
+        billboard.Parent = part
+        billboard.Size = UDim2.new(0, 200, 0, 50)  -- Size of the label
+        billboard.StudsOffset = Vector3.new(0, 3, 0)  -- Position above the part
+
+        -- Create a TextLabel to show the brainrot's name
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Parent = billboard
+        textLabel.BackgroundTransparency = 1  -- No background
+        textLabel.Text = name  -- Display the brainrot's name
+        textLabel.TextColor3 = Color3.fromRGB(255, 255, 0)  -- Neon yellow color
+        textLabel.TextSize = 18
+        textLabel.Font = Enum.Font.GothamBold
+        textLabel.TextStrokeTransparency = 0.8  -- Slight stroke to make the text clearer
+        textLabel.TextScaled = true  -- Make text scale with the label size
+    end
+
+    -- Reset the part back to normal (remove glow and ESP-like effect)
+    local function resetPart(part)
+        -- Reset the part's material to smooth plastic (or whatever material it was)
+        part.Material = Enum.Material.SmoothPlastic
+        part.Color = Color3.fromRGB(255, 255, 255)  -- Reset to normal color
+        part.CanCollide = true  -- Make it collide with objects
+        part.Transparency = 0  -- Reset transparency
+
+        -- Remove the BillboardGui and all its children
+        for _, child in pairs(part:GetChildren()) do
+            if child:IsA("BillboardGui") then
+                child:Destroy()
+            end
+        end
+    end
+
+    -- Find the best brainrot
     local function findBestBrainrot()
         local best = {value = 0, raw = "", name = "", part = nil}
         local plotsFolder = workspace:FindFirstChild("Plots")
@@ -34,18 +91,24 @@ if game.PlaceId == 109983668079237 then
                 local part = decorations:FindFirstChild("Part")
                 if not part then continue end  -- Skip if no part found
 
-                local animalOverhead = base:FindFirstChild("AnimalOverhead")
-                if animalOverhead then
-                    local gen = animalOverhead:FindFirstChild("Generation")
-                    if gen and gen:IsA("TextLabel") then
-                        local value = parseMoneyPerSec(gen.Text)
-                        if value and value > best.value then
-                            best.value = value
-                            best.raw = gen.Text
-                            best.name = animalOverhead:FindFirstChild("DisplayName") and animalOverhead.DisplayName.Text or "Unknown"
-                            best.part = part  -- Attach to the correct part
-                            foundBrainrotInPlot = true
-                        end
+                local spawn = base:FindFirstChild("Spawn")
+                if not spawn then continue end
+
+                local attachment = spawn:FindFirstChild("Attachment")
+                if not attachment then continue end
+
+                local animalOverhead = attachment:FindFirstChild("AnimalOverhead")
+                if not animalOverhead then continue end
+
+                local gen = animalOverhead:FindFirstChild("Generation")
+                if gen and gen:IsA("TextLabel") then
+                    local value = parseMoneyPerSec(gen.Text)
+                    if value and value > best.value then
+                        best.value = value
+                        best.raw = gen.Text
+                        best.name = animalOverhead:FindFirstChild("DisplayName") and animalOverhead.DisplayName.Text or "Unknown"
+                        best.part = part  -- Attach to the correct part
+                        foundBrainrotInPlot = true
                     end
                 end
             end
@@ -57,19 +120,116 @@ if game.PlaceId == 109983668079237 then
         return best
     end
 
-    -- Add a button that finds the best brainrot and prints its details in the console
-    MiscTab:AddButton({
-        Name = "Find Best Brainrot",
-        Callback = function()
-            local bestBrainrot = findBestBrainrot()
-            if bestBrainrot.part then
-                -- Print the details of the best brainrot to the console
-                print("[Best Brainrot] Name: " .. bestBrainrot.name)
-                print("[Best Brainrot] Generation: " .. bestBrainrot.raw)
-                print("[Best Brainrot] Value per second: " .. bestBrainrot.value)
+    -- Toggle the visibility and highlight of the best brainrot (without red color)
+    local function toggleBestBrainrotVisibility(state)
+        local bestBrainrot = findBestBrainrot()
+        if bestBrainrot.part then
+            if state then
+                -- Make the part neon, visible through walls, and show the name above the part
+                makePartVisibleThroughWalls(bestBrainrot.part, bestBrainrot.name)
+                
+                -- Create the label for the best brainrot at the correct part
+                createBrainrotLabel(bestBrainrot.part, bestBrainrot.name, bestBrainrot.raw)
+                print("[Best Brainrot]")
+                print("Name: " .. bestBrainrot.name)
+                print("Generation: " .. bestBrainrot.raw)
+                print("Value per second: " .. bestBrainrot.value)
             else
-                print("[Debug] No valid brainrot found.")
+                -- Reset the part's changes (remove name and neon effect)
+                resetPart(bestBrainrot.part)
+                print("[Debug] Best Brainrot visibility toggled off.")
             end
+        else
+            print("[Debug] No valid brainrot found.")
+        end
+    end
+
+    -- Player ESP Setup
+    _G.ESP = false
+    _G.ESPColor = Color3.fromRGB(255, 255, 255)
+
+    pcall(
+        function()
+            local highlight = Instance.new("Highlight")
+
+            game:GetService("RunService").RenderStepped:Connect(
+                function()
+                    for _, v in pairs(game.Players:GetPlayers()) do
+                        if not v.Character:FindFirstChild("Highlight") then
+                            highlight.FillTransparency = 1
+                            highlight:Clone().Parent = v.Character
+                            highlight.OutlineColor = _G.ESPColor
+                        end
+
+                        game.Players.PlayerAdded:Connect(
+                            function(plr)
+                                plr.CharacterAdded:Connect(
+                                    function(char)
+                                        if not char:FindFirstChild("Highlight") then
+                                            highlight.FillTransparency = 1
+                                            highlight:Clone().Parent = char
+                                            highlight.OutlineColor = _G.ESPColor
+                                        end
+                                    end
+                                )
+                            end
+                        )
+                    end
+
+                    for _, v in pairs(game.Players:GetPlayers()) do
+                        local hl = v.Character:FindFirstChild("Highlight")
+                        hl.Enabled = _G.ESP
+                        hl.OutlineColor = _G.ESPColor
+
+                        -- Create a label for player's name on the ESP
+                        local billboard = Instance.new("BillboardGui")
+                        billboard.Adornee = v.Character:FindFirstChild("Head")
+                        billboard.Size = UDim2.new(0, 100, 0, 50)
+                        billboard.StudsOffset = Vector3.new(0, 3, 0)
+                        billboard.Parent = v.Character:FindFirstChild("Head")
+
+                        local textLabel = Instance.new("TextLabel")
+                        textLabel.Parent = billboard
+                        textLabel.BackgroundTransparency = 1
+                        textLabel.Text = v.Name  -- Display the player's name
+                        textLabel.TextColor3 = _G.ESPColor
+                        textLabel.TextSize = 18
+                        textLabel.Font = Enum.Font.GothamBold
+                        textLabel.TextStrokeTransparency = 0.8
+                        textLabel.TextScaled = true
+                    end
+                end
+            )
+        end
+    )
+
+    -- OrionLib UI
+    local MiscTab = Window:MakeTab({Name="Misc", Icon="rbxassetid://4299432428", PremiumOnly=false})
+
+    -- Add the toggle for showing the best brainrot
+    MiscTab:AddToggle({
+        Name = "Show Best Brainrot",
+        Default = false,  -- Default state (off)
+        Callback = function(state)
+            toggleBestBrainrotVisibility(state)
+        end
+    })
+
+    -- Add the ESP Toggle
+    MiscTab:AddToggle({
+        Name = "Player ESP",
+        Default = false,  -- Default state (off)
+        Callback = function(state)
+            _G.ESP = state
+        end
+    })
+
+    -- Add the ESP Color Picker
+    MiscTab:AddColorPicker({
+        Name = "ESP Color",
+        Default = Color3.fromRGB(255, 255, 255),  -- Default color (White)
+        Callback = function(color)
+            _G.ESPColor = color
         end
     })
 
