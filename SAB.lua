@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name = "ABI │ Steal A Brainrot", IntroEnabled = false})
+    local Window = OrionLib:MakeWindow({Name = "ABI │ Steal A Brainrot1", IntroEnabled = false})
 
     -- Tabs
     local MainTab = Window:MakeTab({Name = "Main", Icon = "rbxassetid://4299432428", PremiumOnly = false})
@@ -64,7 +64,7 @@ if game.PlaceId == 109983668079237 then
     local function addPartESPForBrainrot(bestBrainrot)
         if bestBrainrot.part then
             PartESP.AddESP(
-                bestBrainrot.name,  -- Display Name of the brainrot part
+                bestBrainrot.name,  -- Use the best brainrot's name as the part name
                 bestBrainrot.part,   -- The actual part to track
                 30,                  -- Text Size
                 Color3.fromRGB(255, 255, 0)  -- Text Color (Neon Yellow)
