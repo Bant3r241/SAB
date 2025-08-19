@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v1", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -16,7 +16,7 @@ if game.PlaceId == 109983668079237 then
 
         local bb = Instance.new("BillboardGui")
         bb.Name = "[ESP]"
-        bb.Adornee = part
+        bb.Adornee = part  -- Attach to the Spawn part (not Attachment)
         bb.Size = UDim2.new(0, 100, 0, 30)
         bb.StudsOffset = Vector3.new(0, 3, 0)
         bb.AlwaysOnTop = true
@@ -101,8 +101,8 @@ if game.PlaceId == 109983668079237 then
                         best.value = value
                         best.raw = gen.Text
                         best.name = nameLabel and nameLabel.Text or "Unknown"
-                        best.part = attachment  -- Attach to the Attachment for Brainrot ESP
-                        print("[Brainrot] New best found:", best.name, best.raw, "at", attachment:GetFullName())
+                        best.part = spawn  -- Attach to the Spawn part for Brainrot ESP (instead of attachment)
+                        print("[Brainrot] New best found:", best.name, best.raw, "at", spawn:GetFullName())
                     end
                 else
                     warn("[Brainrot] Generation text does not contain '/s' or missing:", gen and gen.Text or "nil")
