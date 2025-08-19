@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v1", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing
     local function parseMoneyPerSec(text)
@@ -42,6 +42,37 @@ if game.PlaceId == 109983668079237 then
         pointLight.Color = Color3.fromRGB(255, 255, 0)
         pointLight.Range = 20  -- Set range of the light (adjust for visibility)
         pointLight.Brightness = 10  -- Increase brightness for glow effect
+
+        -- Create a selection box around the part to highlight it
+        local selectionBox = Instance.new("SelectionBox")
+        selectionBox.Parent = part
+        selectionBox.Adornee = part
+        selectionBox.Color3 = Color3.fromRGB(255, 255, 0)  -- Yellow outline
+        selectionBox.LineThickness = 0.05  -- Set the thickness of the highlight lines
+        selectionBox.Transparency = 0.7  -- Make the highlight semi-transparent
+    end
+
+    -- Reset the part back to normal (remove the glow effect)
+    local function resetPart(part)
+        -- Reset the part's material to smooth plastic (or whatever material it was)
+        part.Material = Enum.Material.SmoothPlastic
+        part.Color = Color3.fromRGB(255, 255, 255)  -- Reset to normal color
+        part.CanCollide = true  -- Make it collide with objects
+        part.Transparency = 0  -- Reset transparency
+
+        -- Remove the point light (if exists)
+        for _, child in pairs(part:GetChildren()) do
+            if child:IsA("PointLight") then
+                child:Destroy()
+            end
+        end
+
+        -- Remove the selection box (if exists)
+        for _, child in pairs(part:GetChildren()) do
+            if child:IsA("SelectionBox") then
+                child:Destroy()
+            end
+        end
     end
 
     -- Find the best brainrot
@@ -108,7 +139,8 @@ if game.PlaceId == 109983668079237 then
                 print("Generation: " .. bestBrainrot.raw)
                 print("Value per second: " .. bestBrainrot.value)
             else
-                -- Optionally hide or reset the part color and glow effect
+                -- Reset the part's changes (remove glow and selection box)
+                resetPart(bestBrainrot.part)
                 print("[Debug] Best Brainrot visibility toggled off.")
             end
         else
