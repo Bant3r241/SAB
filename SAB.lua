@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v2", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing
     local function parseMoneyPerSec(text)
@@ -106,10 +106,45 @@ if game.PlaceId == 109983668079237 then
         end
     })
 
-    -- Player ESP Setup
+    -- ESP Setup and Configuration
     _G.ESP = false
     _G.ESPColor = Color3.fromRGB(255, 255, 255)
+    _G.ESPTransparency = 1
 
+    local ESPTab = Window:MakeTab({Name="ESP", Icon="rbxassetid://4299432428", PremiumOnly=false})
+
+    -- Toggle ESP
+    ESPTab:AddToggle({
+        Name = "Enable ESP",
+        Default = false,
+        Callback = function(state)
+            _G.ESP = state
+        end
+    })
+
+    -- Change ESP Color
+    ESPTab:AddColorPicker({
+        Name = "ESP Color",
+        Default = Color3.fromRGB(255, 255, 255),
+        Callback = function(color)
+            _G.ESPColor = color
+        end
+    })
+
+    -- Change ESP Transparency
+    ESPTab:AddSlider({
+        Name = "ESP Transparency",
+        Min = 0,
+        Max = 1,
+        Default = 1,
+        Color = Color3.fromRGB(255, 255, 255),
+        Increment = 0.05,
+        Callback = function(transparency)
+            _G.ESPTransparency = transparency
+        end
+    })
+
+    -- Add Player ESP functionality
     pcall(
         function()
             local highlight = Instance.new("Highlight")
@@ -118,7 +153,7 @@ if game.PlaceId == 109983668079237 then
                 function()
                     for _, v in pairs(game.Players:GetPlayers()) do
                         if not v.Character:FindFirstChild("Highlight") then
-                            highlight.FillTransparency = 1
+                            highlight.FillTransparency = _G.ESPTransparency
                             highlight:Clone().Parent = v.Character
                             highlight.OutlineColor = _G.ESPColor
                         end
@@ -128,7 +163,7 @@ if game.PlaceId == 109983668079237 then
                                 plr.CharacterAdded:Connect(
                                     function(char)
                                         if not char:FindFirstChild("Highlight") then
-                                            highlight.FillTransparency = 1
+                                            highlight.FillTransparency = _G.ESPTransparency
                                             highlight:Clone().Parent = char
                                             highlight.OutlineColor = _G.ESPColor
                                         end
@@ -142,6 +177,7 @@ if game.PlaceId == 109983668079237 then
                         local hl = v.Character:FindFirstChild("Highlight")
                         hl.Enabled = _G.ESP
                         hl.OutlineColor = _G.ESPColor
+                        hl.FillTransparency = _G.ESPTransparency
 
                         -- Create a label for player's name on the ESP
                         local billboard = Instance.new("BillboardGui")
