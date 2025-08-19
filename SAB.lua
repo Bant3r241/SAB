@@ -29,55 +29,85 @@ if game.PlaceId == 109983668079237 then
         end
     end
 
-    local function parseMoney(text)
-        local num, suffix = text:match("%$([%d%.]+)([KMBT]?)")
+    local function parseMoneyPerSec(text)
+        -- Example: "$123.4/s", "$1.2K/s"
+        local num, suffix = text:match("%$([%d%.]+)([KMBT]?)/s")
         local mult = {K=1e3, M=1e6, B=1e9, T=1e12}
         return num and tonumber(num) * (mult[suffix] or 1) or nil
     end
 
-    local function getBestBrainrot()
-        local bestVal, bestModel, bestText = 0, nil, ""
-        local plots = workspace:FindFirstChild("Plots")
-        if not plots then return end
-        for _, plot in ipairs(plots:GetChildren()) do
-            local podiums = plot:FindFirstChild("AnimalPodiums")
-            if podiums then
-                for _, podium in ipairs(podiums:GetChildren()) do
-                    local attach = podium:FindFirstDescendant("Attachment")
-                    local gen = attach and attach:FindFirstChild("Generation")
-                    local name = attach and attach:FindFirstChild("DisplayName")
-                    if gen and name and gen:IsA("TextLabel") and name:IsA("TextLabel") then
-                        local val = parseMoney(gen.Text)
-                        if val and val > bestVal then
-                            bestVal, bestModel, bestText = val, podium, name.Text.." - "..gen.Text
+    local function findBestBrainrot()
+        local best = {value = 0, raw = "", name = "", part = nil}
+        local plotsFolder = workspace:FindFirstChild("Plots")
+        if plotsFolder then
+            for _, plot in pairs(plotsFolder:GetChildren()) do
+                local podiums = plot:FindFirstChild("AnimalPodiums")
+                if podiums then
+                    for _, podium in pairs(podiums:GetChildren()) do
+                        local base = podium:FindFirstChild("Base")
+                        if base and base:FindFirstChild("Spawn") then
+                            local attach = base.Spawn:FindFirstChild("Attachment")
+                            if attach and attach:FindFirstChild("AnimalOverhead") then
+                                local animalOverhead = attach.AnimalOverhead
+
+                                local nameLabel
+                                for _, child in pairs(animalOverhead:GetChildren()) do
+                                    if child:IsA("TextLabel") and child.Name == "DisplayName" then
+                                        nameLabel = child
+                                        break
+                                    end
+                                end
+
+                                local gen = animalOverhead:FindFirstChild("Generation")
+                                if gen and gen:IsA("TextLabel") then
+                                    local text = gen.Text
+                                    if text and text:find("/s") then
+                                        local value = parseMoneyPerSec(text)
+                                        if value and value > best.value then
+                                            best.value = value
+                                            best.raw = text
+                                            best.name = nameLabel and nameLabel.Text or "Unknown"
+                                            -- Save the Base part to attach ESP
+                                            best.part = base
+                                        end
+                                    end
+                                end
+                            end
                         end
                     end
                 end
             end
         end
-        return bestModel, bestText
+        return best
     end
 
     local function toggleBrainrotESP(state)
         brainrotESPEnabled = state
+
+        -- Clear old ESP for brainrot
         for part, gui in pairs(espObjects) do
-            if gui and gui.Adornee and gui.Adornee.Name == "BrainrotESP" then removeESP(part) end
-        end
-        if not state then return end
-        local model, text = getBestBrainrot()
-        if model then
-            local part = model:FindFirstDescendantWhichIsA("BasePart")
-            if part then
-                part.Name = "BrainrotESP"
-                createESP(part, text, Color3.fromRGB(255, 215, 0))
+            if gui and gui.Adornee and gui.Adornee.Name == "Base" then
+                removeESP(part)
             end
+        end
+
+        if not state then return end
+
+        local best = findBestBrainrot()
+        if best.part then
+            -- Create ESP on the base part with the name and money per second text
+            createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0))
         end
     end
 
     RunService.RenderStepped:Connect(function()
         if playerESPEnabled then togglePlayerESP(true) end
         if brainrotESPEnabled then toggleBrainrotESP(true) end
-        for part in pairs(espObjects) do if not part or not part.Parent then removeESP(part) end end
+        for part in pairs(espObjects) do
+            if not part or not part.Parent then
+                removeESP(part)
+            end
+        end
     end)
 
     Players.PlayerAdded:Connect(function(p)
