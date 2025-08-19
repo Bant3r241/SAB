@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot vrr", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -113,11 +113,7 @@ if game.PlaceId == 109983668079237 then
         end
 
         if not foundBrainrotInPlot then
-            -- Log once if no brainrot was found in this plot
-            if not noAttachmentLogsDone then
-                print("[Debug] No brainrot found in this plot.")
-                noAttachmentLogsDone = true
-            end
+            print("[Debug] No brainrot found in this plot.")
         end
 
         return best
@@ -142,7 +138,6 @@ if game.PlaceId == 109983668079237 then
             createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0), "Brainrot")
             print("[Debug] Created ESP for the best brainrot at " .. best.name .. " with value: " .. best.raw)
         else
-            -- If no brainrot found, log this once
             print("[Debug] No best brainrot part found to attach ESP!")
         end
     end
