@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing
     local function parseMoneyPerSec(text)
@@ -30,26 +30,26 @@ if game.PlaceId == 109983668079237 then
 
     -- Make the part glow yellow and visible through walls
     local function makePartGlow(part)
-        -- Set the part's material to Neon for a glowing effect
+        -- Set the part's material to Neon for internal glowing effect
         part.Material = Enum.Material.Neon
         part.Color = Color3.fromRGB(255, 255, 0)  -- Yellow color
-        part.CanCollide = false  -- Make it passable through walls
-        part.Transparency = 0.3  -- Adjusted transparency for a subtler effect
+        part.CanCollide = false  -- Make it passable through walls (IMPORTANT)
+        part.Transparency = 0.1  -- More visible transparency for glowing effect
 
-        -- Optionally add a light to make it glow more, but with reduced brightness
+        -- Add a point light for the glowing effect
         local pointLight = Instance.new("PointLight")
         pointLight.Parent = part
         pointLight.Color = Color3.fromRGB(255, 255, 0)
-        pointLight.Range = 10  -- Adjusted range for less intensity
-        pointLight.Brightness = 3  -- Reduced brightness for subtler glow
+        pointLight.Range = 20  -- Increased range for stronger glow
+        pointLight.Brightness = 15  -- Adjusted brightness for more subtle glow
 
         -- Create a selection box around the part to highlight it
         local selectionBox = Instance.new("SelectionBox")
         selectionBox.Parent = part
         selectionBox.Adornee = part
         selectionBox.Color3 = Color3.fromRGB(255, 255, 0)  -- Yellow outline
-        selectionBox.LineThickness = 0.05  -- Set the thickness of the highlight lines
-        selectionBox.Transparency = 0.6  -- Reduced transparency for a more subtle highlight
+        selectionBox.LineThickness = 0.1  -- Set the thickness of the highlight lines
+        selectionBox.Transparency = 0.5  -- Slight transparency for a more subtle outline effect
     end
 
     -- Reset the part back to normal (remove the glow effect)
