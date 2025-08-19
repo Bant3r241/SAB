@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot vg", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -8,6 +8,7 @@ if game.PlaceId == 109983668079237 then
     -- Separate tables for player and brainrot ESPs
     local playerESPObjects, brainrotESPObjects = {}, {}
 
+    -- Create the ESP
     local function createESP(part, text, color, espType)
         if not part then return end
         local espObjects = espType == "Player" and playerESPObjects or brainrotESPObjects
@@ -36,6 +37,7 @@ if game.PlaceId == 109983668079237 then
         espObjects[part] = bb
     end
 
+    -- Remove ESP
     local function removeESP(part, espType)
         local espObjects = espType == "Player" and playerESPObjects or brainrotESPObjects
         if espObjects[part] then
@@ -44,6 +46,7 @@ if game.PlaceId == 109983668079237 then
         end
     end
 
+    -- Player ESP toggle
     local function togglePlayerESP(state)
         playerESPEnabled = state
         for _, p in pairs(Players:GetPlayers()) do
@@ -58,17 +61,18 @@ if game.PlaceId == 109983668079237 then
         end
     end
 
+    -- Money per second parsing
     local function parseMoneyPerSec(text)
         local num, suffix = text:match("%$([%d%.]+)([KMBT]?)/s")
         local mult = {K=1e3, M=1e6, B=1e9, T=1e12}
         return num and tonumber(num) * (mult[suffix] or 1) or nil
     end
 
+    -- Find the best brainrot
     local function findBestBrainrot()
         local best = {value = 0, raw = "", name = "", part = nil}
         local plotsFolder = workspace:FindFirstChild("Plots")
         if not plotsFolder then
-            warn("[Debug] No 'Plots' folder found!")
             return best
         end
 
@@ -89,13 +93,7 @@ if game.PlaceId == 109983668079237 then
                 if not spawn then continue end
 
                 local attachment = spawn:FindFirstChild("Attachment")
-                if not attachment then
-                    if not noAttachmentLogsDone then
-                        print("[Debug] No Attachment part found in Spawn for podium: " .. podium.Name .. ", skipping...")
-                        noAttachmentLogsDone = true
-                    end
-                    continue  -- Skip this podium if no brainrot
-                end
+                if not attachment then continue end  -- Skip this podium if no brainrot
 
                 local animalOverhead = attachment:FindFirstChild("AnimalOverhead")
                 if not animalOverhead then continue end
@@ -109,19 +107,23 @@ if game.PlaceId == 109983668079237 then
                         best.name = animalOverhead:FindFirstChild("DisplayName") and animalOverhead.DisplayName.Text or "Unknown"
                         best.part = podium:FindFirstChild("Claim") and podium.Claim:FindFirstChild("Main")  -- Attach to Main part under Claim
                         foundBrainrotInPlot = true  -- Found at least one brainrot in this plot
-                        print("[Debug] Found brainrot at " .. podium.Name .. " with value: " .. best.raw)
                     end
                 end
             end
         end
 
         if not foundBrainrotInPlot then
-            print("[Debug] No brainrot found in this plot.")
+            -- Log once if no brainrot was found in this plot
+            if not noAttachmentLogsDone then
+                print("[Debug] No brainrot found in this plot.")
+                noAttachmentLogsDone = true
+            end
         end
 
         return best
     end
 
+    -- Brainrot ESP toggle
     local function toggleBrainrotESP(state)
         brainrotESPEnabled = state
 
@@ -138,11 +140,14 @@ if game.PlaceId == 109983668079237 then
         local best = findBestBrainrot()
         if best.part then
             createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0), "Brainrot")
+            print("[Debug] Created ESP for the best brainrot at " .. best.name .. " with value: " .. best.raw)
         else
+            -- If no brainrot found, log this once
             print("[Debug] No best brainrot part found to attach ESP!")
         end
     end
 
+    -- Main loop to clean up ESP
     RunService.RenderStepped:Connect(function()
         if playerESPEnabled then togglePlayerESP(true) end
         if brainrotESPEnabled then toggleBrainrotESP(true) end
@@ -161,6 +166,7 @@ if game.PlaceId == 109983668079237 then
         end
     end)
 
+    -- Player added event
     Players.PlayerAdded:Connect(function(p)
         p.CharacterAdded:Connect(function(c)
             local hrp = c:WaitForChild("HumanoidRootPart", 5)
@@ -170,6 +176,7 @@ if game.PlaceId == 109983668079237 then
         end)
     end)
 
+    -- Create the UI toggle buttons
     local MiscTab = Window:MakeTab({Name="Misc", Icon="rbxassetid://4299432428", PremiumOnly=false})
     MiscTab:AddToggle({Name="Player ESP", Default=false, Callback=togglePlayerESP})
     MiscTab:AddToggle({Name="Best Brainrot ESP", Default=false, Callback=toggleBrainrotESP})
