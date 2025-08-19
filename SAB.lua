@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v22", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -16,7 +16,7 @@ if game.PlaceId == 109983668079237 then
 
         local bb = Instance.new("BillboardGui")
         bb.Name = "[ESP]"
-        bb.Adornee = part  -- Attach to the Main part
+        bb.Adornee = part
         bb.Size = UDim2.new(0, 100, 0, 30)
         bb.StudsOffset = Vector3.new(0, 3, 0)
         bb.AlwaysOnTop = true
@@ -72,47 +72,55 @@ if game.PlaceId == 109983668079237 then
             return best
         end
 
+        local foundError = false  -- Flag to ensure only one log
+
         for _, plot in pairs(plotsFolder:GetChildren()) do
             local podiums = plot:FindFirstChild("AnimalPodiums")
-            if not podiums then continue end
+            if not podiums then 
+                if not foundError then
+                    warn("[Brainrot] No 'AnimalPodiums' found in plot.")
+                    foundError = true
+                end
+                continue
+            end
 
             for _, podium in pairs(podiums:GetChildren()) do
-                local base = podium:FindFirstChild("Base")
-                if not base then continue end
-
-                -- Change here: Look for Claim under AnimalPodiums
-                local claim = podium:FindFirstChild("Claim")  
-                if not claim then
-                    print("[Debug] No 'Claim' part found in podium:", podium.Name)
+                local claim = podium:FindFirstChild("Claim")
+                if not claim then 
+                    if not foundError then
+                        warn("[Brainrot] No 'Claim' part found in podium: " .. podium.Name)
+                        foundError = true
+                    end
                     continue
                 end
 
                 local main = claim:FindFirstChild("Main")
                 if not main then
-                    print("[Debug] No 'Main' part found in Claim for podium:", podium.Name)
-                    continue
-                end  -- Attach ESP to the Main part if it exists
-
-                local animalOverhead = main:FindFirstChild("AnimalOverhead")
-                if not animalOverhead then
-                    print("[Debug] No 'AnimalOverhead' found in Main for podium:", podium.Name)
+                    if not foundError then
+                        warn("[Brainrot] No 'Main' part found in Claim for podium: " .. podium.Name)
+                        foundError = true
+                    end
                     continue
                 end
 
-                local nameLabel = animalOverhead:FindFirstChild("DisplayName")
-                local gen = animalOverhead:FindFirstChild("Generation")
+                local animalOverhead = main:FindFirstChild("AnimalOverhead")
+                if not animalOverhead then 
+                    if not foundError then
+                        warn("[Brainrot] No 'AnimalOverhead' found in Main for podium: " .. podium.Name)
+                        foundError = true
+                    end
+                    continue
+                end
 
-                if gen and gen:IsA("TextLabel") and gen.Text:find("/s") then
+                local gen = animalOverhead:FindFirstChild("Generation")
+                if gen and gen:IsA("TextLabel") then
                     local value = parseMoneyPerSec(gen.Text)
                     if value and value > best.value then
                         best.value = value
                         best.raw = gen.Text
-                        best.name = nameLabel and nameLabel.Text or "Unknown"
-                        best.part = main  -- Attach to Main part
-                        print("[Debug] New best brainrot found: " .. best.name .. " with value: " .. best.raw)
+                        best.name = animalOverhead:FindFirstChild("DisplayName") and animalOverhead.DisplayName.Text or "Unknown"
+                        best.part = main
                     end
-                else
-                    warn("[Brainrot] Generation text does not contain '/s' or missing:", gen and gen.Text or "nil")
                 end
             end
         end
@@ -132,6 +140,7 @@ if game.PlaceId == 109983668079237 then
 
         if not state then return end
 
+        -- Find the best brainrot and create the ESP
         local best = findBestBrainrot()
         if best.part then
             createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0), "Brainrot")
