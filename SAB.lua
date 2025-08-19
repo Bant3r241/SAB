@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot vr5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     -- Money per second parsing
     local function parseMoneyPerSec(text)
@@ -144,17 +144,67 @@ if game.PlaceId == 109983668079237 then
         end
     end
 
-    -- Create the UI toggle for showing the best brainrot
-    local MiscTab = Window:MakeTab({Name="Misc", Icon="rbxassetid://4299432428", PremiumOnly=false})
+    -- Player ESP Setup
+    _G.ESP = false
+    _G.ESPColor = Color3.fromRGB(255, 255, 255)
 
-    -- Add the toggle for showing the best brainrot
-    MiscTab:AddToggle({
-        Name = "Show Best Brainrot",
-        Default = false,  -- Default state (off)
-        Callback = function(state)
-            toggleBestBrainrotVisibility(state)
+    pcall(
+        function()
+            local highlight = Instance.new("Highlight")
+
+            game:GetService("RunService").RenderStepped:Connect(
+                function()
+                    for _, v in pairs(game.Players:GetPlayers()) do
+                        if not v.Character:FindFirstChild("Highlight") then
+                            highlight.FillTransparency = 1
+                            highlight:Clone().Parent = v.Character
+                            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        end
+
+                        game.Players.PlayerAdded:Connect(
+                            function(plr)
+                                plr.CharacterAdded:Connect(
+                                    function(char)
+                                        if not char:FindFirstChild("Highlight") then
+                                            highlight.FillTransparency = 1
+                                            highlight:Clone().Parent = char
+                                            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                                        end
+                                    end
+                                )
+                            end
+                        )
+                    end
+
+                    for _, v in pairs(game.Players:GetPlayers()) do
+                        local hl = v.Character:FindFirstChild("Highlight")
+                        hl.Enabled = _G.ESP
+                        hl.OutlineColor = _G.ESPColor
+                    end
+                end
+            )
         end
-    })
+    )
+
+    local library = loadstring(game:HttpGet(("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wall%20v3")))()
+    local w = library:CreateWindow("Simple ESP")
+
+    local b = w:CreateFolder("Main")
+
+    b:Toggle(
+        "ESP",
+        function(bool)
+            _G.ESP = bool
+        end
+    )
+
+    b:ColorPicker(
+        "ESP Color",
+        Color3.fromRGB(255, 255, 255),
+        function(color)
+            _G.ESPColor = color
+        end
+    )
 
     OrionLib:Init()
 end
