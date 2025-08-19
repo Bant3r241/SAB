@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v4", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v3", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -80,9 +80,10 @@ if game.PlaceId == 109983668079237 then
                 local base = podium:FindFirstChild("Base")
                 if not base then continue end
 
-                local claim = base:FindFirstChild("Claim")
+                -- Change here: Look for Claim under AnimalPodiums
+                local claim = podium:FindFirstChild("Claim")  
                 if not claim then
-                    print("[Debug] No 'Claim' part found in Base for podium:", podium.Name)
+                    print("[Debug] No 'Claim' part found in podium:", podium.Name)
                     continue
                 end
 
