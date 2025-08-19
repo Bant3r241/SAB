@@ -1,6 +1,6 @@
 if game.PlaceId == 109983668079237 then
     local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot v5", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
+    local Window = OrionLib:MakeWindow({Name="ABI │ Steal A Brainrot vg", HidePremium=false, IntroEnabled=false, IntroText="ABI", SaveConfig=true, ConfigFolder="XlurConfig"})
 
     local Players, RunService = game:GetService("Players"), game:GetService("RunService")
     local playerESPEnabled, brainrotESPEnabled = false, false
@@ -68,10 +68,12 @@ if game.PlaceId == 109983668079237 then
         local best = {value = 0, raw = "", name = "", part = nil}
         local plotsFolder = workspace:FindFirstChild("Plots")
         if not plotsFolder then
+            warn("[Debug] No 'Plots' folder found!")
             return best
         end
 
         local foundBrainrotInPlot = false  -- Flag to check if there's any brainrot in the plot
+        local noAttachmentLogsDone = false  -- Prevent multiple logs for missing attachments
 
         -- Iterate through all the plots
         for _, plot in pairs(plotsFolder:GetChildren()) do
@@ -87,7 +89,13 @@ if game.PlaceId == 109983668079237 then
                 if not spawn then continue end
 
                 local attachment = spawn:FindFirstChild("Attachment")
-                if not attachment then continue end  -- Skip this podium if no brainrot
+                if not attachment then
+                    if not noAttachmentLogsDone then
+                        print("[Debug] No Attachment part found in Spawn for podium: " .. podium.Name .. ", skipping...")
+                        noAttachmentLogsDone = true
+                    end
+                    continue  -- Skip this podium if no brainrot
+                end
 
                 local animalOverhead = attachment:FindFirstChild("AnimalOverhead")
                 if not animalOverhead then continue end
@@ -101,14 +109,14 @@ if game.PlaceId == 109983668079237 then
                         best.name = animalOverhead:FindFirstChild("DisplayName") and animalOverhead.DisplayName.Text or "Unknown"
                         best.part = podium:FindFirstChild("Claim") and podium.Claim:FindFirstChild("Main")  -- Attach to Main part under Claim
                         foundBrainrotInPlot = true  -- Found at least one brainrot in this plot
+                        print("[Debug] Found brainrot at " .. podium.Name .. " with value: " .. best.raw)
                     end
                 end
             end
         end
 
-        -- If no brainrot is found in the plot, return the default best
         if not foundBrainrotInPlot then
-            return best
+            print("[Debug] No brainrot found in this plot.")
         end
 
         return best
@@ -131,7 +139,7 @@ if game.PlaceId == 109983668079237 then
         if best.part then
             createESP(best.part, best.name .. " - " .. best.raw, Color3.fromRGB(255, 215, 0), "Brainrot")
         else
-            -- No brainrot found
+            print("[Debug] No best brainrot part found to attach ESP!")
         end
     end
 
